@@ -106,10 +106,6 @@ def test_model(image_path, weights_path):
 
             cv2.imwrite('src_img.png', image_vis)
             cv2.imwrite('derain_ret.png', output_image)
-            cv2.imwrite('atte_map_1.png', atte_maps[0][0, :, :, 0] * 255)
-            cv2.imwrite('atte_map_2.png', atte_maps[1][0, :, :, 0] * 255)
-            cv2.imwrite('atte_map_3.png', atte_maps[2][0, :, :, 0] * 255)
-            cv2.imwrite('atte_map_4.png', atte_maps[3][0, :, :, 0] * 255)
 
             plt.figure('src_image')
             plt.imshow(image_vis[:, :, (2, 1, 0)])
@@ -117,12 +113,16 @@ def test_model(image_path, weights_path):
             plt.imshow(output_image[:, :, (2, 1, 0)])
             plt.figure('atte_map_1')
             plt.imshow(atte_maps[0][0, :, :, 0], cmap='jet')
+            plt.savefig('atte_map_1.png')
             plt.figure('atte_map_2')
             plt.imshow(atte_maps[1][0, :, :, 0], cmap='jet')
+            plt.savefig('atte_map_2.png')
             plt.figure('atte_map_3')
             plt.imshow(atte_maps[2][0, :, :, 0], cmap='jet')
+            plt.savefig('atte_map_3.png')
             plt.figure('atte_map_4')
             plt.imshow(atte_maps[3][0, :, :, 0], cmap='jet')
+            plt.savefig('atte_map_4.png')
             plt.show()
 
     return
