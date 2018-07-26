@@ -325,7 +325,7 @@ class GenerativeNet(cnn_basenet.CNNBaseModel):
                                         name='skip_output_3')
 
             # 传统GAN输出层都使用tanh函数激活
-            skip_output_3 = tf.nn.tanh(skip_output_3, name='skip_output_3_tanh')
+            # skip_output_3 = tf.nn.tanh(skip_output_3, name='skip_output_3_tanh')
 
             ret = {
                 'skip_1': skip_output_1,
