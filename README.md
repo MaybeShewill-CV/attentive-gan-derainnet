@@ -93,7 +93,7 @@ python tools/train_model.py --dataset_dir data/training_data_example/
 You may monitor the training process using tensorboard tools
 
 During my experiment the `G loss` drops as follows:  
-![G loss](https://github.com/MaybeShewill-CV/attentive-gan-derainnet/blob/master/data/images/g_loss.png)
+![G_loss](https://github.com/MaybeShewill-CV/attentive-gan-derainnet/blob/master/data/images/g_loss.png)
 
 The `D loss` drops as follows:  
 ![D_loss](https://github.com/MaybeShewill-CV/attentive-gan-derainnet/blob/master/data/images/d_loss.png)
