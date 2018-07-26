@@ -154,13 +154,6 @@ class DataSet(object):
                 gt_image = np.divide(gt_image, 127.5) - 1
                 label_image = np.divide(label_image, 127.5) - 1
 
-                # gt_image_patches, label_image_patches, mask_image_patches = \
-                #     self._generate_training_pathches(gt_image, label_image, mask_image)
-
-                # gt_imgs.extend(gt_image_patches)
-                # gt_labels.extend(label_image_patches)
-                # mask_labels.extend(mask_image_patches)
-
                 gt_imgs.append(gt_image)
                 gt_labels.append(label_image)
                 mask_labels.append(mask_image)
@@ -170,7 +163,7 @@ class DataSet(object):
 
 
 if __name__ == '__main__':
-    val = DataSet('/media/baidu/Data/Gan_Derain_Dataset/train/train.txt')
+    val = DataSet('Data/Gan_Derain_Dataset/train/train.txt')
     a1, a2, a3 = val.next_batch(6)
     import matplotlib.pyplot as plt
     for index, gt_image in enumerate(a1):
