@@ -10,7 +10,7 @@ train the context autoencoder network. Thanks for the origin author [Rui Qian](h
 The main network architecture is as follows:
 
 `Network Architecture`
-![NetWork_Architecture](https://github.com/TJCVRS/lanenet-lane-detection/blob/master/data/source_image/network_architecture.png)
+![NetWork_Architecture](https://github.com/MaybeShewill-CV/attentive-gan-derainnet/blob/master/data/images/net_architecture.png)
 
 ## Installation
 This software has only been tested on ubuntu 16.04(x64), python3.5, cuda-8.0, cudnn-6.0 with 
@@ -39,27 +39,27 @@ The results are as follows:
 
 `Test Input Image`
 
-![Test Input](https://github.com/TJCVRS/lanenet-lane-detection/blob/master/data/tusimple_test_image/0.jpg)
+![Test Input](https://github.com/MaybeShewill-CV/attentive-gan-derainnet/blob/master/data/images/src_img.png)
 
 `Test Derain result image`
 
-![Test Derain_Result](https://github.com/TJCVRS/lanenet-lane-detection/blob/master/data/source_image/lanenet_mask_result.png)
+![Test Derain_Result](https://github.com/MaybeShewill-CV/attentive-gan-derainnet/blob/master/data/images/derain_ret.png)
 
 `Test Attention Map at time 1`
 
-![Test Attention_Map_1](https://github.com/TJCVRS/lanenet-lane-detection/blob/master/data/source_image/lanenet_binary_seg.png)
+![Test Attention_Map_1](https://github.com/MaybeShewill-CV/attentive-gan-derainnet/blob/master/data/images/atte_map_1.png)
 
 `Test Attention Map at time 2`
 
-![Test Attention_Map_2](https://github.com/TJCVRS/lanenet-lane-detection/blob/master/data/source_image/lanenet_instance_seg.png)
+![Test Attention_Map_2](https://github.com/MaybeShewill-CV/attentive-gan-derainnet/blob/master/data/images/atte_map_2.png)
 
 `Test Attention Map at time 3`
 
-![Test Attention_Map_3](https://github.com/TJCVRS/lanenet-lane-detection/blob/master/data/source_image/lanenet_embedding.png)
+![Test Attention_Map_3](https://github.com/MaybeShewill-CV/attentive-gan-derainnet/blob/master/data/images/atte_map_3.png)
 
 `Test Attention Map at time 4`
 
-![Test Attention_Map_4](https://github.com/TJCVRS/lanenet-lane-detection/blob/master/data/source_image/lanenet_embedding.png)
+![Test Attention_Map_4](https://github.com/MaybeShewill-CV/attentive-gan-derainnet/blob/master/data/images/atte_map_4.png)
 
 ## Train your own model
 
@@ -93,13 +93,13 @@ python tools/train_model.py --dataset_dir data/training_data_example/
 You may monitor the training process using tensorboard tools
 
 During my experiment the `G loss` drops as follows:  
-![G loss](https://github.com/TJCVRS/lanenet-lane-detection/blob/master/data/source_image/total_loss.png)
+![G loss](https://github.com/MaybeShewill-CV/attentive-gan-derainnet/blob/master/data/images/g_loss.png)
 
 The `D loss` drops as follows:  
-![D_loss](https://github.com/TJCVRS/lanenet-lane-detection/blob/master/data/source_image/binary_seg_loss.png)
+![D_loss](https://github.com/MaybeShewill-CV/attentive-gan-derainnet/blob/master/data/images/d_loss.png)
 
 The `Image SSIM between generated image and clean label image` raises as follows:  
-![Image_SSIM](https://github.com/TJCVRS/lanenet-lane-detection/blob/master/data/source_image/instance_seg_loss.png)
+![Image_SSIM](https://github.com/MaybeShewill-CV/attentive-gan-derainnet/blob/master/data/images/image_ssim.png)
 
 Please cite my repo [attentive-gan-derainnet](https://github.com/MaybeShewill-CV/attentive-gan-derainnet) 
 if you find it helps you.
