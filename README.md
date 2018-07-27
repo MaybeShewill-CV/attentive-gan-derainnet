@@ -39,9 +39,9 @@ The results are as follows:
 
 `Test Input Image`
 
-<center class="half">
+<figure class="half">
 <img src="https://github.com/MaybeShewill-CV/attentive-gan-derainnet/blob/master/data/images/src_img.png" height="150px" alt="图片说明" ><img src="https://github.com/MaybeShewill-CV/attentive-gan-derainnet/blob/master/data/images/src_img.png" height="150px" alt="图片说明" >
-</div>
+</figure>
 
 ![Test Input](https://github.com/MaybeShewill-CV/attentive-gan-derainnet/blob/master/data/images/src_img.png)
 
