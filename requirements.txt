@@ -4,4 +4,3 @@ easydict==1.6
 numpy==1.13.1
 matplotlib==2.0.2
 opencv_python==3.4.1.15
-tensorflow==1.9.0
