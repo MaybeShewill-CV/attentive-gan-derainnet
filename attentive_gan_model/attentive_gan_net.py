@@ -325,7 +325,7 @@ class GenerativeNet(cnn_basenet.CNNBaseModel):
                                         name='skip_output_3')
 
             # 传统GAN输出层都使用tanh函数激活
-            # skip_output_3 = tf.nn.tanh(skip_output_3, name='skip_output_3_tanh')
+            skip_output_3 = tf.nn.tanh(skip_output_3, name='skip_output_3_tanh')
 
             ret = {
                 'skip_1': skip_output_1,
@@ -382,7 +382,7 @@ if __name__ == '__main__':
     input_image = tf.placeholder(dtype=tf.float32, shape=[1, 256, 256, 3])
     auto_label_image = tf.placeholder(dtype=tf.float32, shape=[1, 256, 256, 3])
     rnn_label_image = tf.placeholder(dtype=tf.float32, shape=[1, 256, 256, 1])
-    net = GenerativeNet()
+    net = GenerativeNet(phase=tf.constant('train', tf.string))
     rnn_loss = net.compute_attentive_rnn_loss(input_image, rnn_label_image, name='rnn_loss')
     autoencoder_loss = net.compute_autoencoder_loss(input_image, auto_label_image, name='autoencoder_loss')
 
