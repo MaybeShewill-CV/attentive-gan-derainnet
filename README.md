@@ -13,8 +13,8 @@ The main network architecture is as follows:
 ![NetWork_Architecture](https://github.com/MaybeShewill-CV/attentive-gan-derainnet/blob/master/data/images/net_architecture.png)
 
 ## Installation
-This software has only been tested on ubuntu 16.04(x64), python3.5, cuda-8.0, cudnn-6.0 with 
-a GTX-1070 GPU. To install this software you need tensorflow 1.3.0 and other version of 
+This software has only been tested on ubuntu 16.04(x64), python3.5, cuda-9.0, cudnn-7.0 with 
+a GTX-1070 GPU. To install this software you need tensorflow 1.10.0 and other version of 
 tensorflow has not been tested but I think it will be able to work properly in 
 tensorflow above version 1.0. Other required package you may install them by
 
