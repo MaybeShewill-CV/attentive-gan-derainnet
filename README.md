@@ -31,6 +31,7 @@ The trained derain net model weights files are stored in folder model/
 You can test a single image on the trained model as follows
 
 ```
+cd REPO_ROOT_DIR
 python tools/test_model.py --weights_path model/derain_gan_v2_2018-07-23-11-26-23.ckpt-200000
 --image_path data/test_data/test_1.png
 ```
@@ -81,11 +82,13 @@ details.
 You may call the following script to train your own model
 
 ```
+cd REPO_ROOT_DIR
 python tools/train_model.py --dataset_dir data/training_data_example/
 ```
 
 You can also continue the training process from the snapshot by
 ```
+cd REPO_ROOT_DIR
 python tools/train_model.py --dataset_dir data/training_data_example/ 
 --weights_path path/to/your/last/checkpoint
 ```
