@@ -116,8 +116,8 @@ mean time I have found out that if you use the model under tensorflow
 v1.10.0 the nan loss problem will not happen. The reason may be the
 difference of parameter initialization function or the loss optimizer
 function between older tensorflow and newest tensorflow. If the nan 
-loss problem still troubles you upgrading your local tensorflow may
-be a nice option. Good luck on training process!
+loss problem still troubles you when training the model then upgrading 
+your local tensorflow may be a nice option. Good luck on training process!
 
 Thanks for the issues by [Jay-Jia](https://github.com/Jay-Jia)
 
