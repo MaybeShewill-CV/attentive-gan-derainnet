@@ -110,7 +110,7 @@ if you find it helps you.
 ## Common Issue
 Several users find out the nan loss problem may occasionally happen in
 training process under tensorflow v1.3.0. I think it may be caused by the randomly parameter 
-initialization problem. My solution is kill the training process and
+initialization problem. My solution is to kill the training process and
 restart it again to find a suitable initialized parameters. At the 
 mean time I have found out that if you use the model under tensorflow
 v1.10.0 the nan loss problem will not happen. The reason may be the
