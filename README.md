@@ -107,6 +107,21 @@ The `Image SSIM between generated image and clean label image` raises as follows
 Please cite my repo [attentive-gan-derainnet](https://github.com/MaybeShewill-CV/attentive-gan-derainnet) 
 if you find it helps you.
 
+## Common Issue
+Several users find out the nan loss problem may occasionally happen in
+training process under tensorflow v1.3.0. I think it may be caused by the randomly parameter 
+initialization problem. My solution is kill the training process and
+restart it again to find a suitable initialized parameters. At the 
+mean time I have found out that if you use the model under tensorflow
+v1.10.0 the nan loss problem will not happen. The reason may be the
+difference of parameter initialization function or the loss optimizer
+function between older tensorflow and newest tensorflow. If the nan 
+loss problem still troubles you upgrading your local tensorflow may
+be a nice option. Good luck on training process!
+
+Thanks for the issues by [Jay-Jia](https://github.com/Jay-Jia)
+
+
 ## TODO
 - [ ] Parameter adjustment
 - [ ] Test different loss function design
