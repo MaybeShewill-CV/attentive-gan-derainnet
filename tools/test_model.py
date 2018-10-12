@@ -16,10 +16,8 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
-try:
-    from cv2 import cv2
-except ImportError:
-    pass
+from skimage.measure import compare_ssim as ssim
+from skimage.measure import compare_psnr as psnr
 
 from attentive_gan_model import derain_drop_net
 from config import global_config
@@ -58,7 +56,6 @@ def test_model(image_path, weights_path):
 
     :param image_path:
     :param weights_path:
-    :param gpu_id:
     :return:
     """
     assert ops.exists(image_path)
@@ -104,6 +101,17 @@ def test_model(image_path, weights_path):
 
             output_image = np.array(output_image, np.uint8)
 
+            # Image metrics计算
+            image_ssim = ssim(
+                image_vis,
+                output_image,
+                data_range=output_image.max() - output_image.min())
+            image_psnr = psnr(image_vis, output_image)
+
+            print('Image ssim: {:.5f}'.format(image_ssim))
+            print('Image psnr: {:.5f}'.format(image_psnr))
+
+            # 保存并可视化结果
             cv2.imwrite('src_img.png', image_vis)
             cv2.imwrite('derain_ret.png', output_image)
 
