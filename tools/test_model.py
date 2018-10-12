@@ -105,8 +105,12 @@ def test_model(image_path, weights_path):
             image_ssim = ssim(
                 image_vis,
                 output_image,
+                data_range=output_image.max() - output_image.min(),
+                multichannel=True)
+            image_psnr = psnr(
+                image_vis,
+                output_image,
                 data_range=output_image.max() - output_image.min())
-            image_psnr = psnr(image_vis, output_image)
 
             print('Image ssim: {:.5f}'.format(image_ssim))
             print('Image psnr: {:.5f}'.format(image_psnr))
