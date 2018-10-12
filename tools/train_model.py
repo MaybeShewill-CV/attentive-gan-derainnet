@@ -18,10 +18,6 @@ import tensorflow as tf
 import numpy as np
 import glog as log
 import cv2
-try:
-    from cv2 import cv2
-except ImportError:
-    pass
 
 from data_provider import data_provider
 from config import global_config
@@ -87,6 +83,9 @@ def train_model(dataset_dir, weights_path=None):
 
         train_vars = tf.trainable_variables()
 
+        # ssim = tf.image.ssim(tf.image.rgb_to_grayscale(label_tensor),
+        #                      tf.image.rgb_to_grayscale(net_output),
+        #                      max_val=1.0)
         ssim = ssim_computer.compute_ssim(tf.image.rgb_to_grayscale(net_output),
                                           tf.image.rgb_to_grayscale(label_tensor))
 
@@ -94,21 +93,27 @@ def train_model(dataset_dir, weights_path=None):
         g_vars = [tmp for tmp in train_vars if 'attentive_' in tmp.name and 'vgg_feats' not in tmp.name]
         vgg_vars = [tmp for tmp in train_vars if "vgg_feats" in tmp.name]
 
-        d_optim = tf.train.AdamOptimizer(lr_tensor).minimize(discriminative_loss, var_list=d_vars)
-        g_optim = tf.train.MomentumOptimizer(learning_rate=lr_tensor,
-                                             momentum=tf.constant(0.9, tf.float32)).minimize(gan_loss, var_list=g_vars)
+        global_step = tf.Variable(0, trainable=False)
+        learning_rate = tf.train.exponential_decay(lr_tensor, global_step,
+                                                   100000, 0.1, staircase=True)
+
+        d_optim = tf.train.AdamOptimizer(learning_rate).minimize(
+            discriminative_loss, var_list=d_vars)
+        g_optim = tf.train.MomentumOptimizer(
+            learning_rate=learning_rate,
+            momentum=tf.constant(0.9, tf.float32)).minimize(gan_loss, var_list=g_vars)
 
         # Set tf saver
         saver = tf.train.Saver()
-        model_save_dir = 'model/derain_gan_v3'
+        model_save_dir = 'model/derain_gan_tensorflow10'
         if not ops.exists(model_save_dir):
             os.makedirs(model_save_dir)
         train_start_time = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime(time.time()))
-        model_name = 'derain_gan_v3_{:s}.ckpt'.format(str(train_start_time))
+        model_name = 'derain_gan_{:s}.ckpt'.format(str(train_start_time))
         model_save_path = ops.join(model_save_dir, model_name)
 
         # Set tf summary
-        tboard_save_path = 'tboard/derain_gan_v3'
+        tboard_save_path = 'tboard/derain_gan_tensorflow10'
         if not ops.exists(tboard_save_path):
             os.makedirs(tboard_save_path)
         g_loss_scalar = tf.summary.scalar(name='gan_loss', tensor=gan_loss)
@@ -197,7 +202,7 @@ def train_model(dataset_dir, weights_path=None):
                 log.info('Epoch: {:d} D_loss: {:.5f} G_loss: '
                          '{:.5f} Ssim: {:.5f} Cost_time: {:.5f}s'.format(epoch, d_loss, g_loss,
                                                                          ssim_val, cost_time))
-                if epoch % 2000 == 0:
+                if epoch % 5000 == 0:
                     saver.save(sess=sess, save_path=model_save_path, global_step=epoch)
         sess.close()
 
