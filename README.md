@@ -32,7 +32,7 @@ You can test a single image on the trained model as follows
 
 ```
 cd REPO_ROOT_DIR
-python tools/test_model.py --weights_path model/derain_gan_v2_2018-07-23-11-26-23.ckpt-200000
+python tools/test_model.py --weights_path model/new_model/derain_gan_2018-10-09-11-06-58.ckpt-200000
 --image_path data/test_data/test_1.png
 ```
 
@@ -121,7 +121,19 @@ be a nice option. Good luck on training process!
 
 Thanks for the issues by [Jay-Jia](https://github.com/Jay-Jia)
 
+## Recently Work
+Adjust the initialized learning rate and using exponential decay
+strategy to adjust the learning rate during training process. Using
+traditional image augmentation function including random crop and 
+random flip to augment the training dataset which protomed the new
+model performance. I have uploaded a new tensorboard record file and
+you can check the image ssim to compare the two models. New
+model weights can be found under model/new_model folder.
+
+`Model result comparison`
+![Comparison_result](https://github.com/MaybeShewill-CV/attentive-gan-derainnet/blob/master/data/images/model_comparison.png)
+
 
 ## TODO
-- [ ] Parameter adjustment
-- [ ] Test different loss function design
+- [x] Parameter adjustment
+- [x] Test different loss function design
