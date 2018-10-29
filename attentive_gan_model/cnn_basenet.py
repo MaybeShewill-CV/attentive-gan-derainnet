@@ -313,8 +313,8 @@ class CNNBaseModel(object):
         :param name:
         :return:
         """
-
-        return tf.layers.batch_normalization(inputs=inputdata, training=is_training)
+        with tf.variable_scope(name):
+            return tf.layers.batch_normalization(inputs=inputdata, training=is_training)
 
     @staticmethod
     def squeeze(inputdata, axis=None, name=None):
