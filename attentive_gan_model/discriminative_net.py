@@ -48,9 +48,9 @@ class DiscriminativeNet(cnn_basenet.CNNBaseModel):
             conv = self.conv2d(inputdata=input_tensor, out_channel=out_dims, kernel_size=k_size,
                                padding='SAME', stride=stride, use_bias=False, name='conv')
 
-            bn = self.layerbn(inputdata=conv, is_training=self._is_training, name='bn')
+            # bn = self.layerbn(inputdata=conv, is_training=self._is_training, name='bn')
 
-            relu = self.lrelu(bn, name='relu')
+            relu = self.lrelu(conv, name='relu')
 
         return relu
 

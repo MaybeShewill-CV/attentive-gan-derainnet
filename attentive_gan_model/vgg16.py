@@ -56,9 +56,9 @@ class VGG16Encoder(cnn_basenet.CNNBaseModel):
                                kernel_size=k_size, stride=stride,
                                use_bias=False, padding=pad, name='conv')
 
-            bn = self.layerbn(inputdata=conv, is_training=self._is_training, name='bn')
+            # bn = self.layerbn(inputdata=conv, is_training=self._is_training, name='bn')
 
-            relu = self.relu(inputdata=bn, name='relu')
+            relu = self.relu(inputdata=conv, name='relu')
 
             return relu
 
@@ -75,9 +75,9 @@ class VGG16Encoder(cnn_basenet.CNNBaseModel):
             fc = self.fullyconnect(inputdata=input_tensor, out_dim=out_dims, use_bias=use_bias,
                                    name='fc')
 
-            bn = self.layerbn(inputdata=fc, is_training=self._is_training, name='bn')
+            # bn = self.layerbn(inputdata=fc, is_training=self._is_training, name='bn')
 
-            relu = self.relu(inputdata=bn, name='relu')
+            relu = self.relu(inputdata=fc, name='relu')
 
         return relu
 
@@ -180,5 +180,3 @@ if __name__ == '__main__':
     a = tf.placeholder(dtype=tf.float32, shape=[1, 256, 256, 3], name='input')
     encoder = VGG16Encoder(phase=tf.constant('train', dtype=tf.string))
     ret = encoder.extract_feats(a, name='encode')
-    for layer_name, layer_info in ret.items():
-        print('layer name: {:s} shape: {}'.format(layer_name, layer_info['shape']))
