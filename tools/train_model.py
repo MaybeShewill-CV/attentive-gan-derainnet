@@ -51,7 +51,7 @@ def train_model(dataset_dir, weights_path=None):
     """
 
     # 构建数据集
-    with tf.device('/gpu:1'):
+    with tf.device('/gpu:0'):
         train_dataset = data_provider.DataSet(ops.join(dataset_dir, 'train.txt'))
 
         # 声明tensor
@@ -97,11 +97,13 @@ def train_model(dataset_dir, weights_path=None):
         learning_rate = tf.train.exponential_decay(lr_tensor, global_step,
                                                    100000, 0.1, staircase=True)
 
-        d_optim = tf.train.AdamOptimizer(learning_rate).minimize(
-            discriminative_loss, var_list=d_vars)
-        g_optim = tf.train.MomentumOptimizer(
-            learning_rate=learning_rate,
-            momentum=tf.constant(0.9, tf.float32)).minimize(gan_loss, var_list=g_vars)
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        with tf.control_dependencies(update_ops):
+            d_optim = tf.train.AdamOptimizer(learning_rate).minimize(
+                discriminative_loss, var_list=d_vars)
+            g_optim = tf.train.MomentumOptimizer(
+                learning_rate=learning_rate,
+                momentum=tf.constant(0.9, tf.float32)).minimize(gan_loss, var_list=g_vars)
 
         # Set tf saver
         saver = tf.train.Saver()
