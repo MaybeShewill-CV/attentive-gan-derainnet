@@ -71,7 +71,7 @@ def test_model(image_path, weights_path):
     image_vis = image
     image = np.divide(image, 127.5) - 1
 
-    phase = tf.constant('train', tf.string)
+    phase = tf.constant('test', tf.string)
 
     with tf.device('/gpu:0'):
         net = derain_drop_net.DeRainNet(phase=phase)
