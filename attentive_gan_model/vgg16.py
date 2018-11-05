@@ -55,9 +55,6 @@ class VGG16Encoder(cnn_basenet.CNNBaseModel):
             conv = self.conv2d(inputdata=input_tensor, out_channel=out_dims,
                                kernel_size=k_size, stride=stride,
                                use_bias=False, padding=pad, name='conv')
-
-            # bn = self.layerbn(inputdata=conv, is_training=self._is_training, name='bn')
-
             relu = self.relu(inputdata=conv, name='relu')
 
             return relu
@@ -74,9 +71,6 @@ class VGG16Encoder(cnn_basenet.CNNBaseModel):
         with tf.variable_scope(name, reuse=reuse):
             fc = self.fullyconnect(inputdata=input_tensor, out_dim=out_dims, use_bias=use_bias,
                                    name='fc')
-
-            # bn = self.layerbn(inputdata=fc, is_training=self._is_training, name='bn')
-
             relu = self.relu(inputdata=fc, name='relu')
 
         return relu
@@ -128,50 +122,6 @@ class VGG16Encoder(cnn_basenet.CNNBaseModel):
 
             ret = (conv_1_1, conv_1_2, conv_2_1, conv_2_2,
                    conv_3_1, conv_3_2, conv_3_3)
-
-            # pool stage 3
-            # pool3 = self.maxpooling(inputdata=conv_3_3, kernel_size=2,
-            #                         stride=2, name='pool3')
-
-            # # conv stage 4_1
-            # conv_4_1 = self._conv_stage(input_tensor=pool3, k_size=3,
-            #                             out_dims=512, name='conv4_1')
-            #
-            # # conv stage 4_2
-            # conv_4_2 = self._conv_stage(input_tensor=conv_4_1, k_size=3,
-            #                             out_dims=512, name='conv4_2')
-            #
-            # # conv stage 4_3
-            # conv_4_3 = self._conv_stage(input_tensor=conv_4_2, k_size=3,
-            #                             out_dims=512, name='conv4_3')
-            #
-            # # pool stage 4
-            # pool4 = self.maxpooling(inputdata=conv_4_3, kernel_size=2,
-            #                         stride=2, name='pool4')
-            #
-            # # conv stage 5_1
-            # conv_5_1 = self._conv_stage(input_tensor=pool4, k_size=3,
-            #                             out_dims=512, name='conv5_1')
-            #
-            # # conv stage 5_2
-            # conv_5_2 = self._conv_stage(input_tensor=conv_5_1, k_size=3,
-            #                             out_dims=512, name='conv5_2')
-            #
-            # # conv stage 5_3
-            # conv_5_3 = self._conv_stage(input_tensor=conv_5_2, k_size=3,
-            #                             out_dims=512, name='conv5_3')
-            #
-            # # pool stage 5
-            # pool5 = self.maxpooling(inputdata=conv_5_3, kernel_size=2,
-            #                         stride=2, name='pool5')
-
-            # fc stage 1
-            # fc6 = self._fc_stage(input_tensor=pool5, out_dims=4096, name='fc6',
-            #                      use_bias=False)
-
-            # fc stage 2
-            # fc7 = self._fc_stage(input_tensor=fc6, out_dims=4096, name='fc7',
-            #                      use_bias=False)
 
         return ret
 

@@ -63,8 +63,6 @@ class GenerativeNet(cnn_basenet.CNNBaseModel):
                                          stride=1,
                                          use_bias=False,
                                          name='block_{:d}_conv_1'.format(i))
-                    # bn_1 = self.layerbn(inputdata=conv_1, is_training=self._is_training,
-                    #                     name='block_{:d}_bn_1'.format(i + 1))
                     relu_1 = self.lrelu(inputdata=conv_1, name='block_{:d}_relu_1'.format(i + 1))
                     output = relu_1
                     input_tensor = output
@@ -76,8 +74,6 @@ class GenerativeNet(cnn_basenet.CNNBaseModel):
                                          stride=1,
                                          use_bias=False,
                                          name='block_{:d}_conv_1'.format(i))
-                    # bn_1 = self.layerbn(inputdata=conv_1, is_training=self._is_training,
-                    #                     name='block_{:d}_bn_1'.format(i + 1))
                     relu_1 = self.lrelu(inputdata=conv_1, name='block_{:d}_conv_1'.format(i + 1))
                     conv_2 = self.conv2d(inputdata=relu_1,
                                          out_channel=32,
@@ -86,8 +82,6 @@ class GenerativeNet(cnn_basenet.CNNBaseModel):
                                          stride=1,
                                          use_bias=False,
                                          name='block_{:d}_conv_2'.format(i))
-                    # bn_2 = self.layerbn(inputdata=conv_2, is_training=self._is_training,
-                    #                     name='block_{:d}_bn_2'.format(i + 1))
                     relu_2 = self.lrelu(inputdata=conv_2, name='block_{:d}_conv_2'.format(i + 1))
 
                     output = self.lrelu(inputdata=tf.add(relu_2, input_tensor),
@@ -209,81 +203,57 @@ class GenerativeNet(cnn_basenet.CNNBaseModel):
             conv_1 = self.conv2d(inputdata=input_tensor, out_channel=64, kernel_size=5,
                                  padding='SAME',
                                  stride=1, use_bias=False, name='conv_1')
-            # bn_1 = self.layerbn(inputdata=conv_1, is_training=self._is_training,
-            #                     name='bn_1')
             relu_1 = self.lrelu(inputdata=conv_1, name='relu_1')
 
             conv_2 = self.conv2d(inputdata=relu_1, out_channel=128, kernel_size=3,
                                  padding='SAME',
                                  stride=2, use_bias=False, name='conv_2')
-            # bn_2 = self.layerbn(inputdata=conv_2, is_training=self._is_training,
-            #                     name='bn_2')
             relu_2 = self.lrelu(inputdata=conv_2, name='relu_2')
 
             conv_3 = self.conv2d(inputdata=relu_2, out_channel=128, kernel_size=3,
                                  padding='SAME',
                                  stride=1, use_bias=False, name='conv_3')
-            # bn_3 = self.layerbn(inputdata=conv_3, is_training=self._is_training,
-            #                     name='bn_3')
             relu_3 = self.lrelu(inputdata=conv_3, name='relu_3')
 
             conv_4 = self.conv2d(inputdata=relu_3, out_channel=128, kernel_size=3,
                                  padding='SAME',
                                  stride=2, use_bias=False, name='conv_4')
-            # bn_4 = self.layerbn(inputdata=conv_4, is_training=self._is_training,
-            #                     name='bn_4')
             relu_4 = self.lrelu(inputdata=conv_4, name='relu_4')
 
             conv_5 = self.conv2d(inputdata=relu_4, out_channel=256, kernel_size=3,
                                  padding='SAME',
                                  stride=1, use_bias=False, name='conv_5')
-            # bn_5 = self.layerbn(inputdata=conv_5, is_training=self._is_training,
-            #                     name='bn_5')
             relu_5 = self.lrelu(inputdata=conv_5, name='relu_5')
 
             conv_6 = self.conv2d(inputdata=relu_5, out_channel=256, kernel_size=3,
                                  padding='SAME',
                                  stride=1, use_bias=False, name='conv_6')
-            # bn_6 = self.layerbn(inputdata=conv_6, is_training=self._is_training,
-            #                     name='bn_6')
             relu_6 = self.lrelu(inputdata=conv_6, name='relu_6')
 
             dia_conv1 = self.dilation_conv(input_tensor=relu_6, k_size=3, out_dims=256, rate=2,
                                            padding='SAME', use_bias=False, name='dia_conv_1')
-            # bn_7 = self.layerbn(inputdata=dia_conv1, is_training=self._is_training,
-            #                     name='bn_7')
             relu_7 = self.lrelu(dia_conv1, name='relu_7')
 
             dia_conv2 = self.dilation_conv(input_tensor=relu_7, k_size=3, out_dims=256, rate=4,
                                            padding='SAME', use_bias=False, name='dia_conv_2')
-            # bn_8 = self.layerbn(inputdata=dia_conv2, is_training=self._is_training,
-            #                     name='bn_8')
             relu_8 = self.lrelu(dia_conv2, name='relu_8')
 
             dia_conv3 = self.dilation_conv(input_tensor=relu_8, k_size=3, out_dims=256, rate=8,
                                            padding='SAME', use_bias=False, name='dia_conv_3')
-            # bn_9 = self.layerbn(inputdata=dia_conv3, is_training=self._is_training,
-            #                     name='bn_9')
             relu_9 = self.lrelu(dia_conv3, name='relu_9')
 
             dia_conv4 = self.dilation_conv(input_tensor=relu_9, k_size=3, out_dims=256, rate=16,
                                            padding='SAME', use_bias=False, name='dia_conv_4')
-            # bn_10 = self.layerbn(inputdata=dia_conv4, is_training=self._is_training,
-            #                      name='bn_10')
             relu_10 = self.lrelu(dia_conv4, name='relu_10')
 
             conv_7 = self.conv2d(inputdata=relu_10, out_channel=256, kernel_size=3,
                                  padding='SAME', stride=1, use_bias=False,
                                  name='conv_7')
-            # bn_11 = self.layerbn(inputdata=conv_7, is_training=self._is_training,
-            #                      name='bn_11')
             relu_11 = self.lrelu(inputdata=conv_7, name='relu_11')
 
             conv_8 = self.conv2d(inputdata=relu_11, out_channel=256, kernel_size=3,
                                  padding='SAME', stride=1, use_bias=False,
                                  name='conv_8')
-            # bn_12 = self.layerbn(inputdata=conv_8, is_training=self._is_training,
-            #                      name='bn_12')
             relu_12 = self.lrelu(inputdata=conv_8, name='relu_12')
 
             deconv_1 = self.deconv2d(inputdata=relu_12, out_channel=128, kernel_size=4,
@@ -295,8 +265,6 @@ class GenerativeNet(cnn_basenet.CNNBaseModel):
             conv_9 = self.conv2d(inputdata=tf.add(relu_13, relu_3), out_channel=128, kernel_size=3,
                                  padding='SAME', stride=1, use_bias=False,
                                  name='conv_9')
-            # bn_14 = self.layerbn(inputdata=conv_9, is_training=self._is_training,
-            #                      name='bn_14')
             relu_14 = self.lrelu(inputdata=conv_9, name='relu_14')
 
             deconv_2 = self.deconv2d(inputdata=relu_14, out_channel=64, kernel_size=4,
@@ -308,8 +276,6 @@ class GenerativeNet(cnn_basenet.CNNBaseModel):
             conv_10 = self.conv2d(inputdata=tf.add(relu_15, relu_1), out_channel=32, kernel_size=3,
                                   padding='SAME', stride=1, use_bias=False,
                                   name='conv_10')
-            # bn_16 = self.layerbn(inputdata=conv_10, is_training=self._is_training,
-            #                      name='bn_16')
             relu_16 = self.lrelu(inputdata=conv_10, name='relu_16')
 
             skip_output_1 = self.conv2d(inputdata=relu_12, out_channel=3, kernel_size=3,

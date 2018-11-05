@@ -48,8 +48,6 @@ class DiscriminativeNet(cnn_basenet.CNNBaseModel):
             conv = self.conv2d(inputdata=input_tensor, out_channel=out_dims, kernel_size=k_size,
                                padding='SAME', stride=stride, use_bias=False, name='conv')
 
-            # bn = self.layerbn(inputdata=conv, is_training=self._is_training, name='bn')
-
             relu = self.lrelu(conv, name='relu')
 
         return relu
@@ -118,11 +116,6 @@ class DiscriminativeNet(cnn_basenet.CNNBaseModel):
 
             entropy_loss = -tf.log(fc_out_r) - tf.log(-tf.subtract(fc_out_o, tf.constant(1.0, tf.float32)))
             entropy_loss = tf.reduce_mean(entropy_loss)
-            # d_loss_real = tf.reduce_mean(
-            #     tf.nn.sigmoid_cross_entropy_with_logits(logits=fc2_r, labels=tf.ones_like(fc_out_r)))
-            # d_loss_fake = tf.reduce_mean(
-            #     tf.nn.sigmoid_cross_entropy_with_logits(logits=fc2_o, labels=tf.zeros_like(fc_out_o)))
-            # entropy_loss = d_loss_real + d_loss_fake
 
             loss = entropy_loss + 0.05 * l_map
 
