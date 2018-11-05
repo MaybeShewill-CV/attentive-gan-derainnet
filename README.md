@@ -151,7 +151,7 @@ compared with the old model. The model's comparison result can be seen
 as follows.
 
 `Model result comparision`
-![New_Comparison_result](https://github.com/MaybeShewill-CV/attentive-gan-derainnet/blob/master/data/images/model_comparison.png)
+![New_Comparison_result](https://github.com/MaybeShewill-CV/attentive-gan-derainnet/blob/master/data/images/model_comparison_v2.png)
 
 
 ## TODO
