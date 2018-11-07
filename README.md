@@ -32,7 +32,7 @@ You can test a single image on the trained model as follows
 
 ```
 cd REPO_ROOT_DIR
-python tools/test_model.py --weights_path model/new_model/derain_gan_2018-10-09-11-06-58.ckpt-200000
+python tools/test_model.py --weights_path model/new_model/derain_gan_2018-11-02-19-55-27.ckpt-200000
 --image_path data/test_data/test_1.png
 ```
 
