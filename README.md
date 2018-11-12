@@ -76,7 +76,7 @@ All your training image will be scaled into the same scale according to the conf
 
 #### Train model
 In my experiment the training epochs are 200010, batch size is 1, initialized learning rate 
-is 0.001. About training parameters you can check the global_configuration/config.py for 
+is 0.002. About training parameters you can check the global_configuration/config.py for 
 details.
  
 You may call the following script to train your own model
