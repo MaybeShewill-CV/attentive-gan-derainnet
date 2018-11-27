@@ -247,7 +247,7 @@ class CNNBaseModel(object):
             ch = shape[1]
             new_shape = [1, ch, 1, 1]
         if ch is None:
-            raise ValueError("Input of instancebn require known channel!")
+            raise ValueError("Input of instance norm layer require known channel!")
 
         mean, var = tf.nn.moments(inputdata, axis, keep_dims=True)
 
@@ -315,6 +315,37 @@ class CNNBaseModel(object):
         """
         with tf.variable_scope(name):
             return tf.layers.batch_normalization(inputs=inputdata, training=is_training)
+
+    @staticmethod
+    def layergn(inputdata, name, group_size=32, esp=1e-5):
+        """
+
+        :param inputdata:
+        :param name:
+        :param group_size:
+        :param esp:
+        :return:
+        """
+        with tf.variable_scope(name):
+            inputdata = tf.transpose(inputdata, [0, 3, 1, 2])
+            n, c, h, w = inputdata.get_shape().as_list()
+            group_size = min(group_size, c)
+            inputdata = tf.reshape(inputdata, [-1, group_size, c // group_size, h, w])
+            mean, var = tf.nn.moments(inputdata, [2, 3, 4], keep_dims=True)
+            inputdata = (inputdata - mean) / tf.sqrt(var + esp)
+
+            # 每个通道的gamma和beta
+            gamma = tf.Variable(tf.constant(1.0, shape=[c]), dtype=tf.float32, name='gamma')
+            beta = tf.Variable(tf.constant(0.0, shape=[c]), dtype=tf.float32, name='beta')
+            gamma = tf.reshape(gamma, [1, c, 1, 1])
+            beta = tf.reshape(beta, [1, c, 1, 1])
+
+            # 根据论文进行转换 [n, c, h, w, c] 到 [n, h, w, c]
+            output = tf.reshape(inputdata, [-1, c, h, w])
+            output = output * gamma + beta
+            output = tf.transpose(output, [0, 2, 3, 1])
+
+        return output
 
     @staticmethod
     def squeeze(inputdata, axis=None, name=None):
