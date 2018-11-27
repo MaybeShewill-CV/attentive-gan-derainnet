@@ -38,7 +38,7 @@ class VGG16Encoder(cnn_basenet.CNNBaseModel):
         """
         return tf.equal(self._phase, self._train_phase)
 
-    def _conv_stage(self, input_tensor, k_size, out_dims, name,
+    def _conv_stage(self, input_tensor, k_size, out_dims, name, group_size=32,
                     stride=1, pad='SAME', reuse=False):
         """
         将卷积和激活封装在一起
@@ -46,6 +46,7 @@ class VGG16Encoder(cnn_basenet.CNNBaseModel):
         :param k_size:
         :param out_dims:
         :param name:
+        :param group_size:
         :param stride:
         :param pad:
         :param reuse:
@@ -55,9 +56,13 @@ class VGG16Encoder(cnn_basenet.CNNBaseModel):
             conv = self.conv2d(inputdata=input_tensor, out_channel=out_dims,
                                kernel_size=k_size, stride=stride,
                                use_bias=False, padding=pad, name='conv')
-            relu = self.relu(inputdata=conv, name='relu')
+            if group_size:
+                gn = self.layergn(inputdata=conv, group_size=group_size, name='gn')
+                relu = self.relu(inputdata=gn, name='relu')
+            else:
+                relu = self.relu(inputdata=conv, name='relu')
 
-            return relu
+        return relu
 
     def _fc_stage(self, input_tensor, out_dims, name, use_bias=False, reuse=False):
         """
@@ -71,7 +76,8 @@ class VGG16Encoder(cnn_basenet.CNNBaseModel):
         with tf.variable_scope(name, reuse=reuse):
             fc = self.fullyconnect(inputdata=input_tensor, out_dim=out_dims, use_bias=use_bias,
                                    name='fc')
-            relu = self.relu(inputdata=fc, name='relu')
+            gn = self.layergn(inputdata=fc, name='gn')
+            relu = self.relu(inputdata=gn, name='relu')
 
         return relu
 
@@ -86,11 +92,11 @@ class VGG16Encoder(cnn_basenet.CNNBaseModel):
         with tf.variable_scope(name, reuse=reuse):
             # conv stage 1_1
             conv_1_1 = self._conv_stage(input_tensor=input_tensor, k_size=3,
-                                        out_dims=64, name='conv1_1')
+                                        group_size=0, out_dims=64, name='conv1_1')
 
             # conv stage 1_2
             conv_1_2 = self._conv_stage(input_tensor=conv_1_1, k_size=3,
-                                        out_dims=64, name='conv1_2')
+                                        group_size=16, out_dims=64, name='conv1_2')
 
             # pool stage 1
             pool1 = self.maxpooling(inputdata=conv_1_2, kernel_size=2,
@@ -98,11 +104,11 @@ class VGG16Encoder(cnn_basenet.CNNBaseModel):
 
             # conv stage 2_1
             conv_2_1 = self._conv_stage(input_tensor=pool1, k_size=3,
-                                        out_dims=128, name='conv2_1')
+                                        group_size=16, out_dims=128, name='conv2_1')
 
             # conv stage 2_2
             conv_2_2 = self._conv_stage(input_tensor=conv_2_1, k_size=3,
-                                        out_dims=128, name='conv2_2')
+                                        group_size=32, out_dims=128, name='conv2_2')
 
             # pool stage 2
             pool2 = self.maxpooling(inputdata=conv_2_2, kernel_size=2,
@@ -110,15 +116,15 @@ class VGG16Encoder(cnn_basenet.CNNBaseModel):
 
             # conv stage 3_1
             conv_3_1 = self._conv_stage(input_tensor=pool2, k_size=3,
-                                        out_dims=256, name='conv3_1')
+                                        group_size=32, out_dims=256, name='conv3_1')
 
             # conv_stage 3_2
             conv_3_2 = self._conv_stage(input_tensor=conv_3_1, k_size=3,
-                                        out_dims=256, name='conv3_2')
+                                        group_size=32, out_dims=256, name='conv3_2')
 
             # conv stage 3_3
             conv_3_3 = self._conv_stage(input_tensor=conv_3_2, k_size=3,
-                                        out_dims=256, name='conv3_3')
+                                        group_size=32, out_dims=256, name='conv3_3')
 
             ret = (conv_1_1, conv_1_2, conv_2_1, conv_2_2,
                    conv_3_1, conv_3_2, conv_3_3)
