@@ -32,6 +32,10 @@ __C.TRAIN.BATCH_SIZE = 1
 __C.TRAIN.IMG_HEIGHT = 240
 # Set train image width
 __C.TRAIN.IMG_WIDTH = 360
+# Set cpu multi process thread nums
+__C.TRAIN.CPU_MULTI_PROCESS_NUMS = 1
+# Set the GPU nums
+__C.TRAIN.GPU_NUM = 2
 
 # Test options
 __C.TEST = edict()
@@ -39,7 +43,7 @@ __C.TEST = edict()
 # Set the GPU resource used during testing process
 __C.TEST.GPU_MEMORY_FRACTION = 0.8
 # Set the GPU allow growth parameter during tensorflow testing process
-__C.TEST.TF_ALLOW_GROWTH = True
+__C.TEST.TF_ALLOW_GROWTH = False
 # Set the test batch size
 __C.TEST.BATCH_SIZE = 1
 # Set test image height

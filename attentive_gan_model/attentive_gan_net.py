@@ -12,7 +12,9 @@ import tensorflow as tf
 
 from attentive_gan_model import cnn_basenet
 from attentive_gan_model import vgg16
+from config import global_config
 
+CFG = global_config.cfg
 
 class GenerativeNet(cnn_basenet.CNNBaseModel):
     """
@@ -147,7 +149,8 @@ class GenerativeNet(cnn_basenet.CNNBaseModel):
         :param reuse:
         :return:
         """
-        [batch_size, tensor_h, tensor_w, _] = input_tensor.get_shape().as_list()
+        [_, tensor_h, tensor_w, _] = input_tensor.get_shape().as_list()
+        batch_size = CFG.TRAIN.BATCH_SIZE
         with tf.variable_scope(name, reuse=reuse):
             init_attention_map = tf.constant(0.5, dtype=tf.float32,
                                              shape=[batch_size, tensor_h, tensor_w, 1])

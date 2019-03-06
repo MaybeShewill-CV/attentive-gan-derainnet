@@ -16,7 +16,7 @@ import numpy as np
 import tensorflow as tf
 import glog as log
 
-from context import global_config
+from config import global_config
 
 CFG = global_config.cfg
 
