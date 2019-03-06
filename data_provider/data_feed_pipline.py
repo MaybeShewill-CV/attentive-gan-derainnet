@@ -12,14 +12,13 @@ import argparse
 import os
 import os.path as ops
 import random
-import multiprocessing
 
 import glob
 import glog as log
 import tensorflow as tf
 
-from context import tf_io_pipline_tools
-from context import global_config
+from config import global_config
+from data_provider import tf_io_pipline_tools
 
 CFG = global_config.cfg
 
@@ -79,7 +78,7 @@ class DerainDataProducer(object):
                 for _line in _file:
                     _example_info = _line.rstrip('\r').rstrip('\n').split(' ')
                     _example_rain_path_info.append(_example_info[0])
-                    _example_clean_path_info.append(int(_example_info[1]))
+                    _example_clean_path_info.append(_example_info[1])
 
             return _example_rain_path_info, _example_clean_path_info
 
@@ -105,9 +104,6 @@ class DerainDataProducer(object):
         # make save dirs
         os.makedirs(save_dir, exist_ok=True)
 
-        # set process pool
-        process_pool = multiprocessing.Pool(processes=CFG.TRAIN.CPU_MULTI_PROCESS_NUMS)
-
         # generate training example tfrecords
         log.info('Generating training example tfrecords')
 
@@ -117,18 +113,11 @@ class DerainDataProducer(object):
             _split_writing_tfrecords_task(train_rain_images_paths, train_clean_images_paths, _flags='train')
 
         for index, example_paths in enumerate(train_rain_images_paths_split):
-            process_pool.apply_async(func=tf_io_pipline_tools.write_example_tfrecords,
-                                     args=(example_paths,
-                                           train_clean_images_paths_split[index],
-                                           train_tfrecords_save_paths[index],))
-
-        process_pool.close()
-        process_pool.join()
+            tf_io_pipline_tools.write_example_tfrecords(example_paths,
+                                                        train_clean_images_paths_split[index],
+                                                        train_tfrecords_save_paths[index])
 
         log.info('Generate training example tfrecords complete')
-
-        # set process pool
-        process_pool = multiprocessing.Pool(processes=CFG.TRAIN.CPU_MULTI_PROCESS_NUMS)
 
         # generate val example tfrecords
         log.info('Generating validation example tfrecords')
@@ -138,18 +127,12 @@ class DerainDataProducer(object):
         val_rain_images_paths_split, val_clean_images_paths_split, val_tfrecords_save_paths = \
             _split_writing_tfrecords_task(val_rain_images_paths, val_clean_images_paths, _flags='val')
 
-        for index, example_paths in enumerate(val_rain_images_paths):
-            process_pool.apply_async(func=tf_io_pipline_tools.write_example_tfrecords,
-                                     args=(example_paths,
-                                           val_clean_images_paths[index],
-                                           val_tfrecords_save_paths[index],))
-        process_pool.close()
-        process_pool.join()
+        for index, example_paths in enumerate(val_rain_images_paths_split):
+            tf_io_pipline_tools.write_example_tfrecords(example_paths,
+                                                        val_clean_images_paths_split[index],
+                                                        val_tfrecords_save_paths[index])
 
         log.info('Generate validation example tfrecords complete')
-
-        # set process pool
-        process_pool = multiprocessing.Pool(processes=CFG.TRAIN.CPU_MULTI_PROCESS_NUMS)
 
         # generate test example tfrecords
         log.info('Generating testing example tfrecords')
@@ -159,13 +142,10 @@ class DerainDataProducer(object):
         test_rain_images_paths_split, test_clean_images_paths_split, test_tfrecords_save_paths = \
             _split_writing_tfrecords_task(test_rain_images_paths, test_clean_images_paths, _flags='test')
 
-        for index, example_paths in enumerate(test_rain_images_paths):
-            process_pool.apply_async(func=tf_io_pipline_tools.write_example_tfrecords,
-                                     args=(example_paths,
-                                           test_clean_images_paths[index],
-                                           test_tfrecords_save_paths[index],))
-        process_pool.close()
-        process_pool.join()
+        for index, example_paths in enumerate(test_rain_images_paths_split):
+            tf_io_pipline_tools.write_example_tfrecords(example_paths,
+                                                        test_clean_images_paths_split[index],
+                                                        test_tfrecords_save_paths[index])
 
         log.info('Generate testing example tfrecords complete')
 
@@ -206,7 +186,7 @@ class DerainDataProducer(object):
 
                 assert ops.exists(_clean_image_path), '{:s} not exist'.format(_clean_image_path)
 
-                _info.append('{:s} {:s}'.format(_rain_image_path, _clean_image_path))
+                _info.append('{:s} {:s}\n'.format(_rain_image_path, _clean_image_path))
 
             return _info
 
@@ -242,76 +222,76 @@ class DerainDataProducer(object):
         return
 
 
-# class DerainDataFeeder(object):
-#     """
-#     Read training examples from tfrecords for nsfw model
-#     """
-#     def __init__(self, dataset_dir, flags='train'):
-#         """
-#
-#         :param dataset_dir:
-#         :param flags:
-#         """
-#         self._dataset_dir = dataset_dir
-#
-#         self._tfrecords_dir = ops.join(dataset_dir, 'tfrecords')
-#         if not ops.exists(self._tfrecords_dir):
-#             raise ValueError('{:s} not exist, please check again'.format(self._tfrecords_dir))
-#
-#         self._dataset_flags = flags.lower()
-#         if self._dataset_flags not in ['train', 'test', 'val']:
-#             raise ValueError('flags of the data feeder should be \'train\', \'test\', \'val\'')
-#
-#     def inputs(self, batch_size, num_epochs):
-#         """
-#         dataset feed pipline input
-#         :param batch_size:
-#         :param num_epochs:
-#         :return: A tuple (images, labels), where:
-#                     * images is a float tensor with shape [batch_size, H, W, C]
-#                       in the range [-0.5, 0.5].
-#                     * labels is an int32 tensor with shape [batch_size] with the true label,
-#                       a number in the range [0, CLASS_NUMS).
-#         """
-#         if not num_epochs:
-#             num_epochs = None
-#
-#         tfrecords_file_paths = glob.glob('{:s}/{:s}*.tfrecords'.format(self._tfrecords_dir, self._dataset_flags))
-#         random.shuffle(tfrecords_file_paths)
-#
-#         with tf.name_scope('input_tensor'):
-#
-#             # TFRecordDataset opens a binary file and reads one record at a time.
-#             # `tfrecords_file_paths` could also be a list of filenames, which will be read in order.
-#             dataset = tf.data.TFRecordDataset(tfrecords_file_paths)
-#
-#             # The map transformation takes a function and applies it to every element
-#             # of the dataset.
-#             dataset = dataset.map(map_func=tf_io_pipline_tools.decode,
-#                                   num_parallel_calls=CFG.TRAIN.CPU_MULTI_PROCESS_NUMS)
-#             if self._dataset_flags == 'train':
-#                 dataset = dataset.map(map_func=tf_io_pipline_tools.augment_for_train,
-#                                       num_parallel_calls=CFG.TRAIN.CPU_MULTI_PROCESS_NUMS)
-#             else:
-#                 dataset = dataset.map(map_func=tf_io_pipline_tools.augment_for_validation,
-#                                       num_parallel_calls=CFG.TRAIN.CPU_MULTI_PROCESS_NUMS)
-#             dataset = dataset.map(map_func=tf_io_pipline_tools.normalize,
-#                                   num_parallel_calls=CFG.TRAIN.CPU_MULTI_PROCESS_NUMS)
-#
-#             # The shuffle transformation uses a finite-sized buffer to shuffle elements
-#             # in memory. The parameter is the number of elements in the buffer. For
-#             # completely uniform shuffling, set the parameter to be the same as the
-#             # number of elements in the dataset.
-#             if self._dataset_flags != 'test':
-#                 dataset = dataset.shuffle(buffer_size=5000)
-#                 # repeat num epochs
-#                 dataset = dataset.repeat()
-#
-#             dataset = dataset.batch(batch_size)
-#
-#             iterator = dataset.make_one_shot_iterator()
-#
-#         return iterator.get_next(name='{:s}_IteratorGetNext'.format(self._dataset_flags))
+class DerainDataFeeder(object):
+    """
+    Read training examples from tfrecords for nsfw model
+    """
+    def __init__(self, dataset_dir, flags='train'):
+        """
+
+        :param dataset_dir:
+        :param flags:
+        """
+        self._dataset_dir = dataset_dir
+
+        self._tfrecords_dir = ops.join(dataset_dir, 'tfrecords')
+        if not ops.exists(self._tfrecords_dir):
+            raise ValueError('{:s} not exist, please check again'.format(self._tfrecords_dir))
+
+        self._dataset_flags = flags.lower()
+        if self._dataset_flags not in ['train', 'test', 'val']:
+            raise ValueError('flags of the data feeder should be \'train\', \'test\', \'val\'')
+
+    def inputs(self, batch_size, num_epochs):
+        """
+        dataset feed pipline input
+        :param batch_size:
+        :param num_epochs:
+        :return: A tuple (images, labels), where:
+                    * images is a float tensor with shape [batch_size, H, W, C]
+                      in the range [-0.5, 0.5].
+                    * labels is an int32 tensor with shape [batch_size] with the true label,
+                      a number in the range [0, CLASS_NUMS).
+        """
+        if not num_epochs:
+            num_epochs = None
+
+        tfrecords_file_paths = glob.glob('{:s}/{:s}*.tfrecords'.format(self._tfrecords_dir, self._dataset_flags))
+        random.shuffle(tfrecords_file_paths)
+
+        with tf.name_scope('input_tensor'):
+
+            # TFRecordDataset opens a binary file and reads one record at a time.
+            # `tfrecords_file_paths` could also be a list of filenames, which will be read in order.
+            dataset = tf.data.TFRecordDataset(tfrecords_file_paths)
+
+            # The map transformation takes a function and applies it to every element
+            # of the dataset.
+            dataset = dataset.map(map_func=tf_io_pipline_tools.decode,
+                                  num_parallel_calls=CFG.TRAIN.CPU_MULTI_PROCESS_NUMS)
+            if self._dataset_flags == 'train':
+                dataset = dataset.map(map_func=tf_io_pipline_tools.augment_for_train,
+                                      num_parallel_calls=CFG.TRAIN.CPU_MULTI_PROCESS_NUMS)
+            else:
+                dataset = dataset.map(map_func=tf_io_pipline_tools.augment_for_validation,
+                                      num_parallel_calls=CFG.TRAIN.CPU_MULTI_PROCESS_NUMS)
+            dataset = dataset.map(map_func=tf_io_pipline_tools.normalize,
+                                  num_parallel_calls=CFG.TRAIN.CPU_MULTI_PROCESS_NUMS)
+
+            # The shuffle transformation uses a finite-sized buffer to shuffle elements
+            # in memory. The parameter is the number of elements in the buffer. For
+            # completely uniform shuffling, set the parameter to be the same as the
+            # number of elements in the dataset.
+            if self._dataset_flags != 'test':
+                dataset = dataset.shuffle(buffer_size=1000)
+                # repeat num epochs
+                dataset = dataset.repeat()
+
+            dataset = dataset.batch(batch_size)
+
+            iterator = dataset.make_one_shot_iterator()
+
+        return iterator.get_next(name='{:s}_IteratorGetNext'.format(self._dataset_flags))
 
 
 if __name__ == '__main__':
