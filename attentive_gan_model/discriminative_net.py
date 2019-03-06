@@ -56,7 +56,7 @@ class DiscriminativeNet(cnn_basenet.CNNBaseModel):
 
         return relu
 
-    def build(self, input_tensor, name, reuse=False):
+    def inference(self, input_tensor, name, reuse=False):
         """
 
         :param input_tensor:
@@ -70,23 +70,23 @@ class DiscriminativeNet(cnn_basenet.CNNBaseModel):
                                             group_size=0,
                                             name='conv_stage_1')
             conv_stage_2 = self._conv_stage(input_tensor=conv_stage_1, k_size=5,
-                                            stride=1, out_dims=16, group_size=4, name='conv_stage_2')
+                                            stride=1, out_dims=16, group_size=0, name='conv_stage_2')
             conv_stage_3 = self._conv_stage(input_tensor=conv_stage_2, k_size=5,
-                                            stride=1, out_dims=32, group_size=4, name='conv_stage_3')
+                                            stride=1, out_dims=32, group_size=0, name='conv_stage_3')
             conv_stage_4 = self._conv_stage(input_tensor=conv_stage_3, k_size=5,
-                                            stride=1, out_dims=64, group_size=8, name='conv_stage_4')
+                                            stride=1, out_dims=64, group_size=0, name='conv_stage_4')
             conv_stage_5 = self._conv_stage(input_tensor=conv_stage_4, k_size=5,
-                                            stride=1, out_dims=128, group_size=16, name='conv_stage_5')
+                                            stride=1, out_dims=128, group_size=0, name='conv_stage_5')
             conv_stage_6 = self._conv_stage(input_tensor=conv_stage_5, k_size=5,
-                                            stride=1, out_dims=128, group_size=32, name='conv_stage_6')
+                                            stride=1, out_dims=128, group_size=0, name='conv_stage_6')
             attention_map = self.conv2d(inputdata=conv_stage_6, out_channel=1, kernel_size=5,
                                         padding='SAME', stride=1, use_bias=False, name='attention_map')
             conv_stage_7 = self._conv_stage(input_tensor=attention_map * conv_stage_6, k_size=5,
-                                            stride=4, out_dims=64, group_size=32, name='conv_stage_7')
+                                            stride=4, out_dims=64, group_size=0, name='conv_stage_7')
             conv_stage_8 = self._conv_stage(input_tensor=conv_stage_7, k_size=5,
-                                            stride=4, out_dims=64, group_size=16, name='conv_stage_8')
+                                            stride=4, out_dims=64, group_size=0, name='conv_stage_8')
             conv_stage_9 = self._conv_stage(input_tensor=conv_stage_8, k_size=5,
-                                            stride=4, out_dims=32, group_size=16, name='conv_stage_9')
+                                            stride=4, out_dims=32, group_size=0, name='conv_stage_9')
             fc_1 = self.fullyconnect(inputdata=conv_stage_9, out_dim=1024, use_bias=False, name='fc_1')
             fc_2 = self.fullyconnect(inputdata=fc_1, out_dim=1, use_bias=False, name='fc_2')
             fc_out = self.sigmoid(inputdata=fc_2, name='fc_out')
@@ -96,33 +96,35 @@ class DiscriminativeNet(cnn_basenet.CNNBaseModel):
 
             return fc_out, attention_map, fc_2
 
-    def compute_loss(self, input_tensor, label_tensor, attention_map, name):
+    def compute_loss(self, input_tensor, label_tensor, attention_map, name, reuse=False):
         """
 
         :param input_tensor:
         :param label_tensor:
         :param attention_map:
         :param name:
+        :param reuse:
         :return:
         """
-        with tf.variable_scope(name):
+        with tf.variable_scope(name, reuse=reuse):
             [batch_size, image_h, image_w, _] = input_tensor.get_shape().as_list()
 
             # 论文里的O
             zeros_mask = tf.zeros(shape=[batch_size, image_h, image_w, 1],
                                   dtype=tf.float32, name='O')
-            fc_out_o, attention_mask_o, fc2_o = self.build(
+            fc_out_o, attention_mask_o, fc2_o = self.inference(
                 input_tensor=input_tensor, name='discriminative_inference')
-            fc_out_r, attention_mask_r, fc2_r = self.build(
+            fc_out_r, attention_mask_r, fc2_r = self.inference(
                 input_tensor=label_tensor, name='discriminative_inference', reuse=True)
 
             l_map = tf.losses.mean_squared_error(attention_map, attention_mask_o) + \
                     tf.losses.mean_squared_error(attention_mask_r, zeros_mask)
 
             entropy_loss = -tf.log(fc_out_r) - tf.log(-tf.subtract(fc_out_o, tf.constant(1.0, tf.float32)))
-            entropy_loss = tf.reduce_mean(entropy_loss)
+            entropy_loss = tf.reduce_mean(entropy_loss, name='discriminative_entropy_loss')
 
             loss = entropy_loss + 0.05 * l_map
+            loss = tf.identity(loss, name='discriminative_loss')
 
             return fc_out_o, loss
 

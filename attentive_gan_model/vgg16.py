@@ -76,8 +76,7 @@ class VGG16Encoder(cnn_basenet.CNNBaseModel):
         with tf.variable_scope(name, reuse=reuse):
             fc = self.fullyconnect(inputdata=input_tensor, out_dim=out_dims, use_bias=use_bias,
                                    name='fc')
-            gn = self.layergn(inputdata=fc, name='gn')
-            relu = self.relu(inputdata=gn, name='relu')
+            relu = self.relu(inputdata=fc, name='relu')
 
         return relu
 
@@ -96,7 +95,7 @@ class VGG16Encoder(cnn_basenet.CNNBaseModel):
 
             # conv stage 1_2
             conv_1_2 = self._conv_stage(input_tensor=conv_1_1, k_size=3,
-                                        group_size=16, out_dims=64, name='conv1_2')
+                                        group_size=0, out_dims=64, name='conv1_2')
 
             # pool stage 1
             pool1 = self.maxpooling(inputdata=conv_1_2, kernel_size=2,
@@ -104,11 +103,11 @@ class VGG16Encoder(cnn_basenet.CNNBaseModel):
 
             # conv stage 2_1
             conv_2_1 = self._conv_stage(input_tensor=pool1, k_size=3,
-                                        group_size=16, out_dims=128, name='conv2_1')
+                                        group_size=0, out_dims=128, name='conv2_1')
 
             # conv stage 2_2
             conv_2_2 = self._conv_stage(input_tensor=conv_2_1, k_size=3,
-                                        group_size=32, out_dims=128, name='conv2_2')
+                                        group_size=0, out_dims=128, name='conv2_2')
 
             # pool stage 2
             pool2 = self.maxpooling(inputdata=conv_2_2, kernel_size=2,
@@ -116,15 +115,15 @@ class VGG16Encoder(cnn_basenet.CNNBaseModel):
 
             # conv stage 3_1
             conv_3_1 = self._conv_stage(input_tensor=pool2, k_size=3,
-                                        group_size=32, out_dims=256, name='conv3_1')
+                                        group_size=0, out_dims=256, name='conv3_1')
 
             # conv_stage 3_2
             conv_3_2 = self._conv_stage(input_tensor=conv_3_1, k_size=3,
-                                        group_size=32, out_dims=256, name='conv3_2')
+                                        group_size=0, out_dims=256, name='conv3_2')
 
             # conv stage 3_3
             conv_3_3 = self._conv_stage(input_tensor=conv_3_2, k_size=3,
-                                        group_size=32, out_dims=256, name='conv3_3')
+                                        group_size=0, out_dims=256, name='conv3_3')
 
             ret = (conv_1_1, conv_1_2, conv_2_1, conv_2_2,
                    conv_3_1, conv_3_2, conv_3_3)
