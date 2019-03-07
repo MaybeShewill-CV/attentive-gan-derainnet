@@ -25,7 +25,7 @@ __C.TRAIN.LEARNING_RATE = 0.0002
 # Set the GPU resource used during training process
 __C.TRAIN.GPU_MEMORY_FRACTION = 0.95
 # Set the GPU allow growth parameter during tensorflow training process
-__C.TRAIN.TF_ALLOW_GROWTH = False
+__C.TRAIN.TF_ALLOW_GROWTH = True
 # Set the shadownet training batch size
 __C.TRAIN.BATCH_SIZE = 6
 # Set train image height
