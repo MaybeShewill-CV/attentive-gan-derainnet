@@ -27,15 +27,15 @@ __C.TRAIN.GPU_MEMORY_FRACTION = 0.95
 # Set the GPU allow growth parameter during tensorflow training process
 __C.TRAIN.TF_ALLOW_GROWTH = True
 # Set the shadownet training batch size
-__C.TRAIN.BATCH_SIZE = 6
+__C.TRAIN.BATCH_SIZE = 1
 # Set train image height
 __C.TRAIN.IMG_HEIGHT = 256
 # Set train image width
 __C.TRAIN.IMG_WIDTH = 376
 # Set train image height
-__C.TRAIN.CROP_IMG_HEIGHT = 128
+__C.TRAIN.CROP_IMG_HEIGHT = 240
 # Set train image width
-__C.TRAIN.CROP_IMG_WIDTH = 128
+__C.TRAIN.CROP_IMG_WIDTH = 360
 # Set cpu multi process thread nums
 __C.TRAIN.CPU_MULTI_PROCESS_NUMS = 6
 # Set the GPU nums

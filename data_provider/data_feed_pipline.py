@@ -287,7 +287,7 @@ class DerainDataFeeder(object):
                 # repeat num epochs
                 dataset = dataset.repeat()
 
-            dataset = dataset.batch(batch_size)
+            dataset = dataset.batch(batch_size, drop_remainder=True)
 
             iterator = dataset.make_one_shot_iterator()
 

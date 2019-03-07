@@ -16,6 +16,7 @@ from config import global_config
 
 CFG = global_config.cfg
 
+
 class GenerativeNet(cnn_basenet.CNNBaseModel):
     """
     实现Attentive GAN Network中的生成网络 Fig(2)中的generator部分
@@ -149,8 +150,7 @@ class GenerativeNet(cnn_basenet.CNNBaseModel):
         :param reuse:
         :return:
         """
-        [_, tensor_h, tensor_w, _] = input_tensor.get_shape().as_list()
-        batch_size = CFG.TRAIN.BATCH_SIZE
+        [batch_size, tensor_h, tensor_w, _] = input_tensor.get_shape().as_list()
         with tf.variable_scope(name, reuse=reuse):
             init_attention_map = tf.constant(0.5, dtype=tf.float32,
                                              shape=[batch_size, tensor_h, tensor_w, 1])
