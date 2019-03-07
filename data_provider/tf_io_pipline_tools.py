@@ -228,25 +228,69 @@ def random_crop_batch_images(rain_image, clean_image, mask_image, cropped_size):
     return cropped_rain_image, cropped_clean_image, cropped_mask_image
 
 
+def random_horizon_flip_batch_images(rain_image, clean_image, mask_image):
+    """
+    Random horizon flip image batch data for training
+    :param rain_image:
+    :param clean_image:
+    :param mask_image:
+    :return:
+    """
+    concat_images = tf.concat([rain_image, clean_image, mask_image], axis=-1)
+
+    [image_height, image_width, _] = rain_image.get_shape().as_list()
+
+    concat_flipped_images = tf.image.random_flip_left_right(
+        image=concat_images,
+        seed=tf.random.set_random_seed(1)
+    )
+
+    flipped_rain_image = tf.slice(
+        concat_flipped_images,
+        begin=[0, 0, 0],
+        size=[image_height, image_width, 3]
+    )
+    flipped_clean_image = tf.slice(
+        concat_flipped_images,
+        begin=[0, 0, 3],
+        size=[image_height, image_width, 3]
+    )
+    flipped_mask_image = tf.slice(
+        concat_flipped_images,
+        begin=[0, 0, 6],
+        size=[image_height, image_width, 1]
+    )
+
+    return flipped_rain_image, flipped_clean_image, flipped_mask_image
+
+
 if __name__ == '__main__':
     """
     test io tools
     """
     from matplotlib import pyplot as plt
 
-    from data_provider import data_feed_pipline
+    rain_image = cv2.imread('/media/baidu/Data/Gan_Derain_Dataset/Whole_Dataset/rain_image/0_rain.png')
+    clean_image = cv2.imread('/media/baidu/Data/Gan_Derain_Dataset/Whole_Dataset/clean_image/0_clean.png')
+    diff_image = np.abs(np.array(rain_image, np.float32) - np.array(clean_image, np.float32))
+    diff_image = diff_image.sum(axis=2)
 
-    dataset = data_feed_pipline.DerainDataFeeder(dataset_dir='/media/baidu/Data/Gan_Derain_Dataset/Whole_Dataset',
-                                                 flags='train')
+    mask_image = np.zeros(diff_image.shape, np.float32)
 
-    rain_image, clean_image, mask_image = dataset.inputs(CFG.TRAIN.BATCH_SIZE, 1)
+    mask_image[np.where(diff_image >= 35)] = 1.
+
+    rain_image, clean_image, mask_image = random_horizon_flip_batch_images(
+        tf.convert_to_tensor(np.array(rain_image, np.float32)),
+        tf.convert_to_tensor(np.array(clean_image, np.float32)),
+        tf.convert_to_tensor(np.expand_dims(mask_image, -1))
+    )
 
     with tf.Session() as sess:
         a, b, c = sess.run([rain_image, clean_image, mask_image])
 
-        a = np.array((a[0] + 1) * 127.5, np.uint8)
-        b = np.array((b[0] + 1) * 127.5, np.uint8)
-        c = np.array(c[0] * 255.0, np.uint8)
+        a = np.array(a, np.uint8)
+        b = np.array(b, np.uint8)
+        c = np.array(c * 255.0, np.uint8)
 
         plt.figure('rain')
         plt.imshow(a[:, :, (2, 1, 0)])
