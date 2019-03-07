@@ -44,7 +44,7 @@ def morph_process(image):
     :param image:
     :return:
     """
-    kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (5, 5))
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
     close_image = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
     open_image = cv2.morphologyEx(close_image, cv2.MORPH_OPEN, kernel)
 
@@ -87,7 +87,7 @@ def write_example_tfrecords(rain_images_paths, clean_images_paths, tfrecords_pat
 
             _mask_image = np.zeros(_diff_image.shape, np.float32)
 
-            _mask_image[np.where(_diff_image >= 50)] = 1.
+            _mask_image[np.where(_diff_image >= 35)] = 1.
             _mask_image = morph_process(_mask_image)
             _mask_image = _mask_image.tostring()
 
@@ -147,7 +147,15 @@ def augment_for_train(rain_image, clean_image, mask_image):
     :param mask_image:
     :return:
     """
-    return rain_image, clean_image, mask_image
+    rain_image = tf.cast(rain_image, tf.float32)
+    clean_image = tf.cast(clean_image, tf.float32)
+
+    return random_crop_batch_images(
+        rain_image=rain_image,
+        clean_image=clean_image,
+        mask_image=mask_image,
+        cropped_size=[CFG.TRAIN.CROP_IMG_WIDTH, CFG.TRAIN.CROP_IMG_HEIGHT]
+    )
 
 
 def augment_for_validation(rain_image, clean_image, mask_image):
@@ -182,3 +190,68 @@ def normalize(rain_image, clean_image, mask_image):
                                  tf.constant(1.0, dtype=tf.float32))
 
     return rain_image_fp, clean_image_fp, mask_image
+
+
+def random_crop_batch_images(rain_image, clean_image, mask_image, cropped_size):
+    """
+    Random crop image batch data for training
+    :param rain_image:
+    :param clean_image:
+    :param mask_image:
+    :param cropped_size: [cropped_width, cropped_height]
+    :return:
+    """
+    concat_images = tf.concat([rain_image, clean_image, mask_image], axis=-1)
+
+    concat_cropped_images = tf.image.random_crop(
+        concat_images,
+        [cropped_size[1], cropped_size[0], tf.shape(concat_images)[-1]],
+        seed=tf.random.set_random_seed(1234)
+    )
+
+    cropped_rain_image = tf.slice(
+        concat_cropped_images,
+        begin=[0, 0, 0],
+        size=[cropped_size[1], cropped_size[0], 3]
+    )
+    cropped_clean_image = tf.slice(
+        concat_cropped_images,
+        begin=[0, 0, 3],
+        size=[cropped_size[1], cropped_size[0], 3]
+    )
+    cropped_mask_image = tf.slice(
+        concat_cropped_images,
+        begin=[0, 0, 6],
+        size=[cropped_size[1], cropped_size[0], 1]
+    )
+
+    return cropped_rain_image, cropped_clean_image, cropped_mask_image
+
+
+if __name__ == '__main__':
+    """
+    test io tools
+    """
+    from matplotlib import pyplot as plt
+
+    from data_provider import data_feed_pipline
+
+    dataset = data_feed_pipline.DerainDataFeeder(dataset_dir='/media/baidu/Data/Gan_Derain_Dataset/Whole_Dataset',
+                                                 flags='train')
+
+    rain_image, clean_image, mask_image = dataset.inputs(CFG.TRAIN.BATCH_SIZE, 1)
+
+    with tf.Session() as sess:
+        a, b, c = sess.run([rain_image, clean_image, mask_image])
+
+        a = np.array((a[0] + 1) * 127.5, np.uint8)
+        b = np.array((b[0] + 1) * 127.5, np.uint8)
+        c = np.array(c[0] * 255.0, np.uint8)
+
+        plt.figure('rain')
+        plt.imshow(a[:, :, (2, 1, 0)])
+        plt.figure('clean')
+        plt.imshow(b[:, :, (2, 1, 0)])
+        plt.figure('mask')
+        plt.imshow(c[:, :, 0], cmap='gray')
+        plt.show()
