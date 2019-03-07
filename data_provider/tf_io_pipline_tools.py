@@ -158,7 +158,7 @@ def augment_for_train(rain_image, clean_image, mask_image):
     )
 
 
-def augment_for_validation(rain_image, clean_image, mask_image):
+def augment_for_test(rain_image, clean_image, mask_image):
     """
 
     :param rain_image:

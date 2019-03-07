@@ -269,11 +269,11 @@ class DerainDataFeeder(object):
             # of the dataset.
             dataset = dataset.map(map_func=tf_io_pipline_tools.decode,
                                   num_parallel_calls=CFG.TRAIN.CPU_MULTI_PROCESS_NUMS)
-            if self._dataset_flags == 'train':
+            if self._dataset_flags != 'test':
                 dataset = dataset.map(map_func=tf_io_pipline_tools.augment_for_train,
                                       num_parallel_calls=CFG.TRAIN.CPU_MULTI_PROCESS_NUMS)
             else:
-                dataset = dataset.map(map_func=tf_io_pipline_tools.augment_for_validation,
+                dataset = dataset.map(map_func=tf_io_pipline_tools.augment_for_test,
                                       num_parallel_calls=CFG.TRAIN.CPU_MULTI_PROCESS_NUMS)
             dataset = dataset.map(map_func=tf_io_pipline_tools.normalize,
                                   num_parallel_calls=CFG.TRAIN.CPU_MULTI_PROCESS_NUMS)
