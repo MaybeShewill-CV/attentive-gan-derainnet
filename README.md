@@ -14,9 +14,9 @@ The main network architecture is as follows:
 
 ## Installation
 This software has only been tested on ubuntu 16.04(x64), python3.5, cuda-9.0, cudnn-7.0 with 
-a GTX-1070 GPU. To install this software you need tensorflow 1.10.0 and other version of 
+a GTX-1070 GPU. To install this software you need tensorflow 1.12.0 and other version of 
 tensorflow has not been tested but I think it will be able to work properly in 
-tensorflow above version 1.0. Other required package you may install them by
+tensorflow above version 1.10. Other required package you may install them by
 
 ```
 pip3 install -r requirements.txt
@@ -32,7 +32,7 @@ You can test a single image on the trained model as follows
 
 ```
 cd REPO_ROOT_DIR
-python tools/test_model.py --weights_path model/new_model/derain_gan_2018-11-02-19-55-27.ckpt-200000
+python tools/test_model.py --weights_path model/derain_gan/derain_gan.ckpt-100000
 --image_path data/test_data/test_1.png
 ```
 
@@ -65,17 +65,26 @@ The results are as follows:
 ## Train your own model
 
 #### Data Preparation
-Firstly you need to organize your training data refer to the data/training_data_example 
-folder structure. And you need to generate a train.txt record the data used for training 
-the model. 
+You need to organize your training examples. Put all of your rain images and
+clean images in two separate folders which are named after 
+SOURCE_DATA_ROOT_DIR/rain_image and SOURCE_DATA_ROOT_DIR/clean_image.
+The rest of the preparation work will be done by running following script
 
-The training samples are consist of two components. A clean image free from rain drop label 
-image and a origin image degraded by raindrops.
+```
+cd PROJECT_ROOT_DIR
+python data_provider/data_feed_pipline.py --dataset_dir SOURCE_DATA_ROOT_DIR
+--tfrecords_dir TFRECORDS_SAVE_DIR
+```
 
-All your training image will be scaled into the same scale according to the config file.
+The training samples are consist of two components. A clean image free 
+from rain drop label image and a origin image degraded by raindrops.
+
+All your training image will be automatically scaled into the same scale 
+according to the config file and will be converted into tensorflow records
+for efficient data feed pipline.
 
 #### Train model
-In my experiment the training epochs are 200010, batch size is 1, initialized learning rate 
+In my experiment the training epochs are 100010, batch size is 1, initialized learning rate 
 is 0.002. About training parameters you can check the global_configuration/config.py for 
 details.
  
@@ -83,13 +92,13 @@ You may call the following script to train your own model
 
 ```
 cd REPO_ROOT_DIR
-python tools/train_model.py --dataset_dir data/training_data_example/
+python tools/train_model.py --dataset_dir SOURCE_DATA_ROOT_DIR
 ```
 
 You can also continue the training process from the snapshot by
 ```
 cd REPO_ROOT_DIR
-python tools/train_model.py --dataset_dir data/training_data_example/ 
+python tools/train_model.py --dataset_dir SOURCE_DATA_ROOT_DIR 
 --weights_path path/to/your/last/checkpoint
 ```
 
@@ -106,6 +115,25 @@ The `Image SSIM between generated image and clean label image` raises as follows
 
 Please cite my repo [attentive-gan-derainnet](https://github.com/MaybeShewill-CV/attentive-gan-derainnet) 
 if you find it helps you.
+
+#### Export Model
+The trained model can be convert into tensorflow saved model and tensorflow js
+model for web useage. If you want to convert the ckpt model into tensorflow 
+saved model you may run following script
+
+```
+cd PROJECT_ROOT_DIR
+python tools/export_tf_saved_model.py --export_dir model/derain_gan_saved_model 
+--ckpt_path model/derain_gan/derain_gan.ckpt-100000
+```
+
+If you want to convert into tensorflow js model you can modified the bash 
+script and run it 
+
+```
+cd PROJECT_ROOT_DIR
+bash tools/convert_tfjs_model.sh
+```
 
 ## Common Issue
 Several users find out the nan loss problem may occasionally happen in
@@ -175,3 +203,4 @@ old model.
 ## TODO
 - [x] Parameter adjustment
 - [x] Test different loss function design
+- [ ] Add tensorflow service
