@@ -19,7 +19,7 @@ cfg = __C
 __C.TRAIN = edict()
 
 # Set the shadownet training epochs
-__C.TRAIN.EPOCHS = 200010
+__C.TRAIN.EPOCHS = 100010
 # Set the initial learning rate
 __C.TRAIN.LEARNING_RATE = 0.0002
 # Set the GPU resource used during training process
