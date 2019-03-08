@@ -1,4 +1,0 @@
-/data/training_data_example/gt_label/0_clean.png /data/training_data_example/data/0_rain.png
-/data/training_data_example/gt_label/1_clean.png /data/training_data_example/data/1_rain.png
-/data/training_data_example/gt_label/2_clean.png /data/training_data_example/data/2_rain.png
-/data/training_data_example/gt_label/3_clean.png /data/training_data_example/data/3_rain.png

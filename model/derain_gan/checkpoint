@@ -1,0 +1,2 @@
+model_checkpoint_path: "derain_gan.ckpt-100000"
+all_model_checkpoint_paths: "derain_gan.ckpt-100000"
