@@ -13,16 +13,13 @@ import os.path as ops
 import argparse
 import time
 
-import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
 import glog as log
-import cv2
 
-from data_provider import data_provider
+from data_provider import data_feed_pipline
 from config import global_config
 from attentive_gan_model import derain_drop_net
-from attentive_gan_model import tf_ssim
 
 CFG = global_config.cfg
 VGG_MEAN = [103.939, 116.779, 123.68]
@@ -41,6 +38,65 @@ def init_args():
     return parser.parse_args()
 
 
+def average_gradients(tower_grads):
+    """Calculate the average gradient for each shared variable across all towers.
+    Note that this function provides a synchronization point across all towers.
+    Args:
+      tower_grads: List of lists of (gradient, variable) tuples. The outer list
+        is over individual gradients. The inner list is over the gradient
+        calculation for each tower.
+    Returns:
+       List of pairs of (gradient, variable) where the gradient has been averaged
+       across all towers.
+    """
+    average_grads = []
+    for grad_and_vars in zip(*tower_grads):
+        # Note that each grad_and_vars looks like the following:
+        #   ((grad0_gpu0, var0_gpu0), ... , (grad0_gpuN, var0_gpuN))
+        grads = []
+        for g, _ in grad_and_vars:
+            # Add 0 dimension to the gradients to represent the tower.
+            expanded_g = tf.expand_dims(g, 0)
+
+            # Append on a 'tower' dimension which we will average over below.
+            grads.append(expanded_g)
+
+        # Average over the 'tower' dimension.
+        grad = tf.concat(grads, 0)
+        grad = tf.reduce_mean(grad, 0)
+
+        # Keep in mind that the Variables are redundant because they are shared
+        # across towers. So .. we will just return the first tower's pointer to
+        # the Variable.
+        v = grad_and_vars[0][1]
+        grad_and_var = (grad, v)
+        average_grads.append(grad_and_var)
+
+    return average_grads
+
+
+def compute_net_gradients(images, labels, net, optimizer=None, is_net_first_initialized=False):
+    """
+    Calculate gradients for single GPU
+    :param images: images for training
+    :param labels: labels corresponding to images
+    :param net: classification model
+    :param optimizer: network optimizer
+    :param is_net_first_initialized: if the network is initialized
+    :return:
+    """
+    net_loss = net.compute_loss(input_tensor=images,
+                                labels=labels,
+                                name='nsfw_cls_model',
+                                reuse=is_net_first_initialized)
+    if optimizer is not None:
+        grads = optimizer.compute_gradients(net_loss)
+    else:
+        grads = None
+
+    return net_loss, grads
+
+
 def train_model(dataset_dir, weights_path=None):
     """
 
@@ -49,65 +105,108 @@ def train_model(dataset_dir, weights_path=None):
     :param weights_path:
     :return:
     """
-
     # 构建数据集
-    with tf.device('/gpu:0'):
-        train_dataset = data_provider.DataSet(ops.join(dataset_dir, 'train.txt'))
+    with tf.device('/cpu:0'):
 
-        # 声明tensor
-        input_tensor = tf.placeholder(dtype=tf.float32,
-                                      shape=[CFG.TRAIN.BATCH_SIZE, CFG.TRAIN.IMG_HEIGHT, CFG.TRAIN.IMG_WIDTH, 3],
-                                      name='input_tensor')
-        label_tensor = tf.placeholder(dtype=tf.float32,
-                                      shape=[CFG.TRAIN.BATCH_SIZE, CFG.TRAIN.IMG_HEIGHT, CFG.TRAIN.IMG_WIDTH, 3],
-                                      name='label_tensor')
-        mask_tensor = tf.placeholder(dtype=tf.float32,
-                                     shape=[CFG.TRAIN.BATCH_SIZE, CFG.TRAIN.IMG_HEIGHT, CFG.TRAIN.IMG_WIDTH, 1],
-                                     name='mask_tensor')
-        lr_tensor = tf.placeholder(dtype=tf.float32,
-                                   shape=[],
-                                   name='learning_rate')
-        phase_tensor = tf.placeholder(dtype=tf.string, shape=[], name='phase')
+        train_dataset = data_feed_pipline.DerainDataFeeder(dataset_dir=dataset_dir, flags='train')
+        val_dataset = data_feed_pipline.DerainDataFeeder(dataset_dir=dataset_dir, flags='val')
 
-        # 声明ssim计算类
-        ssim_computer = tf_ssim.SsimComputer()
+        train_input_tensor, train_label_tensor, train_mask_tensor = train_dataset.inputs(CFG.TRAIN.BATCH_SIZE, 1)
+        val_input_tensor, val_label_tensor, val_mask_tensor = val_dataset.inputs(CFG.TRAIN.BATCH_SIZE, 1)
 
-        # 声明网络
-        derain_net = derain_drop_net.DeRainNet(phase=phase_tensor)
+    with tf.device('/gpu:1'):
 
-        gan_loss, discriminative_loss, net_output = derain_net.compute_loss(
-            input_tensor=input_tensor,
-            gt_label_tensor=label_tensor,
-            mask_label_tensor=mask_tensor,
-            name='derain_net_loss')
+        # define network
+        derain_net = derain_drop_net.DeRainNet(phase=tf.constant('train', dtype=tf.string))
 
+        # calculate train loss and validation loss
+        train_gan_loss, train_discriminative_loss, train_net_output = derain_net.compute_loss(
+            input_tensor=train_input_tensor,
+            gt_label_tensor=train_label_tensor,
+            mask_label_tensor=train_mask_tensor,
+            name='derain_net',
+            reuse=False
+        )
+
+        val_gan_loss, val_discriminative_loss, val_net_output = derain_net.compute_loss(
+            input_tensor=val_input_tensor,
+            gt_label_tensor=val_label_tensor,
+            mask_label_tensor=val_mask_tensor,
+            name='derain_net',
+            reuse=True
+        )
+
+        # calculate train ssim, psnr and validation ssim, psnr
+        train_label_tensor_scale = tf.image.convert_image_dtype(
+            image=(train_label_tensor + 1.0) * 127.5,
+            dtype=tf.uint8
+        )
+        train_net_output_tensor_scale = tf.image.convert_image_dtype(
+            image=(train_net_output + 1.0) * 127.5,
+            dtype=tf.uint8
+        )
+        val_label_tensor_scale = tf.image.convert_image_dtype(
+            image=(val_label_tensor + 1.0) * 127.5,
+            dtype=tf.uint8
+        )
+        val_net_output_tensor_scale = tf.image.convert_image_dtype(
+            image=(val_net_output + 1.0) * 127.5,
+            dtype=tf.uint8
+        )
+
+        train_label_tensor_scale = tf.image.rgb_to_grayscale(
+            images=tf.reverse(train_label_tensor_scale, axis=[-1])
+        )
+        train_net_output_tensor_scale = tf.image.rgb_to_grayscale(
+            images=tf.reverse(train_net_output_tensor_scale, axis=[-1])
+        )
+        val_label_tensor_scale = tf.image.rgb_to_grayscale(
+            images=tf.reverse(val_label_tensor_scale, axis=[-1])
+        )
+        val_net_output_tensor_scale = tf.image.rgb_to_grayscale(
+            images=tf.reverse(val_net_output_tensor_scale, axis=[-1])
+        )
+
+        train_ssim = tf.reduce_mean(tf.image.ssim(
+            train_label_tensor_scale, train_net_output_tensor_scale, max_val=255),
+            name='avg_train_ssim'
+        )
+        train_psnr = tf.reduce_mean(tf.image.psnr(
+            train_label_tensor_scale, train_net_output_tensor_scale, max_val=255),
+            name='avg_train_psnr'
+        )
+        val_ssim = tf.reduce_mean(tf.image.ssim(
+            val_label_tensor_scale, val_net_output_tensor_scale, max_val=255),
+            name='avg_val_ssim'
+        )
+        val_psnr = tf.reduce_mean(tf.image.psnr(
+            val_label_tensor_scale, val_net_output_tensor_scale, max_val=255),
+            name='avg_val_psnr'
+        )
+
+        # collect trainable vars to update
         train_vars = tf.trainable_variables()
-
-        # ssim = tf.image.ssim(tf.image.rgb_to_grayscale(label_tensor),
-        #                      tf.image.rgb_to_grayscale(net_output),
-        #                      max_val=1.0)
-        ssim = ssim_computer.compute_ssim(tf.image.rgb_to_grayscale(net_output),
-                                          tf.image.rgb_to_grayscale(label_tensor))
 
         d_vars = [tmp for tmp in train_vars if 'discriminative_loss' in tmp.name]
         g_vars = [tmp for tmp in train_vars if 'attentive_' in tmp.name and 'vgg_feats' not in tmp.name]
         vgg_vars = [tmp for tmp in train_vars if "vgg_feats" in tmp.name]
 
+        # set optimizer
         global_step = tf.Variable(0, trainable=False)
-        learning_rate = tf.train.exponential_decay(lr_tensor, global_step,
+        learning_rate = tf.train.exponential_decay(CFG.TRAIN.LEARNING_RATE, global_step,
                                                    100000, 0.1, staircase=True)
 
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         with tf.control_dependencies(update_ops):
             d_optim = tf.train.AdamOptimizer(learning_rate).minimize(
-                discriminative_loss, var_list=d_vars)
+                train_discriminative_loss, var_list=d_vars)
             g_optim = tf.train.MomentumOptimizer(
                 learning_rate=learning_rate,
-                momentum=tf.constant(0.9, tf.float32)).minimize(gan_loss, var_list=g_vars)
+                momentum=tf.constant(0.9, tf.float32)).minimize(train_gan_loss, var_list=g_vars)
 
         # Set tf saver
         saver = tf.train.Saver()
-        model_save_dir = 'model/derain_gan_tensorflow10'
+        model_save_dir = 'model/derain_gan'
         if not ops.exists(model_save_dir):
             os.makedirs(model_save_dir)
         train_start_time = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime(time.time()))
@@ -115,15 +214,27 @@ def train_model(dataset_dir, weights_path=None):
         model_save_path = ops.join(model_save_dir, model_name)
 
         # Set tf summary
-        tboard_save_path = 'tboard/derain_gan_tensorflow10'
+        tboard_save_path = 'tboard/derain_gan'
         if not ops.exists(tboard_save_path):
             os.makedirs(tboard_save_path)
-        g_loss_scalar = tf.summary.scalar(name='gan_loss', tensor=gan_loss)
-        d_loss_scalar = tf.summary.scalar(name='discriminative_loss', tensor=discriminative_loss)
-        ssim_scalar = tf.summary.scalar(name='image_ssim', tensor=ssim)
-        lr_scalar = tf.summary.scalar(name='learning_rate', tensor=lr_tensor)
-        d_summary_op = tf.summary.merge([d_loss_scalar, lr_scalar])
-        g_summary_op = tf.summary.merge([g_loss_scalar, ssim_scalar])
+
+        train_g_loss_scalar = tf.summary.scalar(name='train_gan_loss', tensor=train_gan_loss)
+        train_d_loss_scalar = tf.summary.scalar(name='train_discriminative_loss', tensor=train_discriminative_loss)
+        train_ssim_scalar = tf.summary.scalar(name='train_image_ssim', tensor=train_ssim)
+        train_psnr_scalar = tf.summary.scalar(name='train_image_psnr', tensor=train_psnr)
+        val_g_loss_scalar = tf.summary.scalar(name='val_gan_loss', tensor=val_gan_loss)
+        val_d_loss_scalar = tf.summary.scalar(name='val_discriminative_loss', tensor=val_discriminative_loss)
+        val_ssim_scalar = tf.summary.scalar(name='val_image_ssim', tensor=val_ssim)
+        val_psnr_scalar = tf.summary.scalar(name='val_image_psnr', tensor=val_psnr)
+
+        lr_scalar = tf.summary.scalar(name='learning_rate', tensor=learning_rate)
+
+        train_summary_op = tf.summary.merge(
+            [val_g_loss_scalar, val_d_loss_scalar, val_ssim_scalar, val_psnr_scalar]
+        )
+        val_summary_op = tf.summary.merge(
+            [train_g_loss_scalar, train_d_loss_scalar, train_ssim_scalar, train_psnr_scalar, lr_scalar]
+        )
 
         # Set sess configuration
         sess_config = tf.ConfigProto(allow_soft_placement=True)
@@ -174,41 +285,49 @@ def train_model(dataset_dir, weights_path=None):
                 # training part
                 t_start = time.time()
 
-                gt_imgs, label_imgs, mask_imgs = train_dataset.next_batch(CFG.TRAIN.BATCH_SIZE)
+                # update network and calculate loss and evaluate statics
+                d_op, g_op, train_d_loss, train_g_loss, train_avg_ssim, \
+                train_avg_psnr, train_summary, val_summary = sess.run(
+                    [d_optim, g_optim, train_discriminative_loss, train_gan_loss, train_ssim,
+                     train_psnr, train_summary_op, val_summary_op]
+                )
 
-                mask_imgs = [np.expand_dims(tmp, axis=-1) for tmp in mask_imgs]
-
-                # Update discriminative Network
-                _, d_loss, d_summary = sess.run(
-                    [d_optim, discriminative_loss, d_summary_op],
-                    feed_dict={input_tensor: gt_imgs,
-                               label_tensor: label_imgs,
-                               mask_tensor: mask_imgs,
-                               lr_tensor: CFG.TRAIN.LEARNING_RATE,
-                               phase_tensor: 'train'})
-
-                # Update attentive gan Network
-                _, g_loss, g_summary, ssim_val = sess.run(
-                    [g_optim, gan_loss, g_summary_op, ssim],
-                    feed_dict={input_tensor: gt_imgs,
-                               label_tensor: label_imgs,
-                               mask_tensor: mask_imgs,
-                               lr_tensor: CFG.TRAIN.LEARNING_RATE,
-                               phase_tensor: 'train'})
-
-                summary_writer.add_summary(d_summary, global_step=epoch)
-                summary_writer.add_summary(g_summary, global_step=epoch)
+                summary_writer.add_summary(train_summary, global_step=epoch)
+                summary_writer.add_summary(val_summary, global_step=epoch)
 
                 cost_time = time.time() - t_start
 
-                log.info('Epoch: {:d} D_loss: {:.5f} G_loss: '
-                         '{:.5f} Ssim: {:.5f} Cost_time: {:.5f}s'.format(epoch, d_loss, g_loss,
-                                                                         ssim_val, cost_time))
+                log.info('Epoch_Train: {:d} D_loss: {:.5f} G_loss: '
+                         '{:.5f} SSIM: {:.5f} PSNR: {:.5f} Cost_time: {:.5f}s'.format(
+                    epoch, train_d_loss, train_g_loss, train_avg_ssim, train_avg_psnr, cost_time)
+                )
+
+                # Evaluate model
+                if epoch % 500 == 0:
+                    val_d_loss, val_g_loss, val_avg_ssim, val_avg_psnr = sess.run(
+                        [val_discriminative_loss, val_gan_loss, val_ssim, val_psnr]
+                    )
+                    log.info('Epoch_Val: {:d} D_loss: {:.5f} G_loss: '
+                             '{:.5f} SSIM: {:.5f} PSNR: {:.5f} Cost_time: {:.5f}s'.format(
+                        epoch, val_d_loss, val_g_loss, val_avg_ssim, val_avg_psnr, cost_time)
+                    )
+
+                # Save Model
                 if epoch % 5000 == 0:
                     saver.save(sess=sess, save_path=model_save_path, global_step=epoch)
         sess.close()
 
     return
+
+
+def train_multi_gpu(dataset_dir, weights_path=None):
+    """
+
+    :param dataset_dir:
+    :param weights_path:
+    :return:
+    """
+    raise NotImplementedError
 
 
 if __name__ == '__main__':

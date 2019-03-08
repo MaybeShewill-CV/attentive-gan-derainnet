@@ -1,6 +1,0 @@
-model_checkpoint_path: "derain_gan_2018-11-02-19-55-27.ckpt-200000"
-all_model_checkpoint_paths: "derain_gan_2018-11-02-19-55-27.ckpt-180000"
-all_model_checkpoint_paths: "derain_gan_2018-11-02-19-55-27.ckpt-185000"
-all_model_checkpoint_paths: "derain_gan_2018-11-02-19-55-27.ckpt-190000"
-all_model_checkpoint_paths: "derain_gan_2018-11-02-19-55-27.ckpt-195000"
-all_model_checkpoint_paths: "derain_gan_2018-11-02-19-55-27.ckpt-200000"
