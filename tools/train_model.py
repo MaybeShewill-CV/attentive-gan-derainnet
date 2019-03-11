@@ -138,19 +138,19 @@ def train_model(dataset_dir, weights_path=None):
 
         # calculate train ssim, psnr and validation ssim, psnr
         train_label_tensor_scale = tf.image.convert_image_dtype(
-            image=(train_label_tensor + 1.0) * 127.5,
+            image=(train_label_tensor + 1.0) / 2.0,
             dtype=tf.uint8
         )
         train_net_output_tensor_scale = tf.image.convert_image_dtype(
-            image=(train_net_output + 1.0) * 127.5,
+            image=(train_net_output + 1.0) / 2.0,
             dtype=tf.uint8
         )
         val_label_tensor_scale = tf.image.convert_image_dtype(
-            image=(val_label_tensor + 1.0) * 127.5,
+            image=(val_label_tensor + 1.0) / 2.0,
             dtype=tf.uint8
         )
         val_net_output_tensor_scale = tf.image.convert_image_dtype(
-            image=(val_net_output + 1.0) * 127.5,
+            image=(val_net_output + 1.0) / 2.0,
             dtype=tf.uint8
         )
 
@@ -315,6 +315,7 @@ def train_model(dataset_dir, weights_path=None):
                 # Save Model
                 if epoch % 5000 == 0:
                     saver.save(sess=sess, save_path=model_save_path, global_step=epoch)
+
         sess.close()
 
     return
