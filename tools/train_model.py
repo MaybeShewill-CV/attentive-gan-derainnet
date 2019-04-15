@@ -230,10 +230,10 @@ def train_model(dataset_dir, weights_path=None):
         lr_scalar = tf.summary.scalar(name='learning_rate', tensor=learning_rate)
 
         train_summary_op = tf.summary.merge(
-            [val_g_loss_scalar, val_d_loss_scalar, val_ssim_scalar, val_psnr_scalar]
+            [train_g_loss_scalar, train_d_loss_scalar, train_ssim_scalar, train_psnr_scalar, lr_scalar]
         )
         val_summary_op = tf.summary.merge(
-            [train_g_loss_scalar, train_d_loss_scalar, train_ssim_scalar, train_psnr_scalar, lr_scalar]
+            [val_g_loss_scalar, val_d_loss_scalar, val_ssim_scalar, val_psnr_scalar]
         )
 
         # Set sess configuration
