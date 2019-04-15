@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # @Time    : 19-3-1 上午10:41
-# @Author  : Luo Yao
-# @Site    : http://icode.baidu.com/repos/baidu/personal-code/Luoyao
+# @Author  : MaybeShewill-CV
+# @Site    : https://github.com/MaybeShewill-CV/attentive-gan-derainnet
 # @File    : tf_io_pipline_tools.py
 # @IDE: PyCharm
 """
@@ -69,16 +69,18 @@ def write_example_tfrecords(rain_images_paths, clean_images_paths, tfrecords_pat
 
             # prepare rain image
             _rain_image = cv2.imread(_rain_image_path, cv2.IMREAD_COLOR)
-            _rain_image = cv2.resize(_rain_image,
-                                     dsize=(CFG.TRAIN.IMG_WIDTH, CFG.TRAIN.IMG_HEIGHT),
-                                     interpolation=cv2.INTER_LINEAR)
+            if _rain_image.shape != (CFG.TRAIN.IMG_WIDTH, CFG.TRAIN.IMG_HEIGHT, 3):
+                _rain_image = cv2.resize(_rain_image,
+                                         dsize=(CFG.TRAIN.IMG_WIDTH, CFG.TRAIN.IMG_HEIGHT),
+                                         interpolation=cv2.INTER_LINEAR)
             _rain_image_raw = _rain_image.tostring()
 
             # prepare clean image
             _clean_image = cv2.imread(clean_images_paths[_index], cv2.IMREAD_COLOR)
-            _clean_image = cv2.resize(_clean_image,
-                                      dsize=(CFG.TRAIN.IMG_WIDTH, CFG.TRAIN.IMG_HEIGHT),
-                                      interpolation=cv2.INTER_LINEAR)
+            if _clean_image.shape != (CFG.TRAIN.IMG_WIDTH, CFG.TRAIN.IMG_HEIGHT, 3):
+                _clean_image = cv2.resize(_clean_image,
+                                          dsize=(CFG.TRAIN.IMG_WIDTH, CFG.TRAIN.IMG_HEIGHT),
+                                          interpolation=cv2.INTER_LINEAR)
             _clean_image_raw = _clean_image.tostring()
 
             # prepare mask image
@@ -262,40 +264,3 @@ def random_horizon_flip_batch_images(rain_image, clean_image, mask_image):
     )
 
     return flipped_rain_image, flipped_clean_image, flipped_mask_image
-
-
-if __name__ == '__main__':
-    """
-    test io tools
-    """
-    from matplotlib import pyplot as plt
-
-    rain_image = cv2.imread('/media/baidu/Data/Gan_Derain_Dataset/Whole_Dataset/rain_image/0_rain.png')
-    clean_image = cv2.imread('/media/baidu/Data/Gan_Derain_Dataset/Whole_Dataset/clean_image/0_clean.png')
-    diff_image = np.abs(np.array(rain_image, np.float32) - np.array(clean_image, np.float32))
-    diff_image = diff_image.sum(axis=2)
-
-    mask_image = np.zeros(diff_image.shape, np.float32)
-
-    mask_image[np.where(diff_image >= 35)] = 1.
-
-    rain_image, clean_image, mask_image = random_horizon_flip_batch_images(
-        tf.convert_to_tensor(np.array(rain_image, np.float32)),
-        tf.convert_to_tensor(np.array(clean_image, np.float32)),
-        tf.convert_to_tensor(np.expand_dims(mask_image, -1))
-    )
-
-    with tf.Session() as sess:
-        a, b, c = sess.run([rain_image, clean_image, mask_image])
-
-        a = np.array(a, np.uint8)
-        b = np.array(b, np.uint8)
-        c = np.array(c * 255.0, np.uint8)
-
-        plt.figure('rain')
-        plt.imshow(a[:, :, (2, 1, 0)])
-        plt.figure('clean')
-        plt.imshow(b[:, :, (2, 1, 0)])
-        plt.figure('mask')
-        plt.imshow(c[:, :, 0], cmap='gray')
-        plt.show()

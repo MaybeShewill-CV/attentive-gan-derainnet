@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # @Time    : 18-7-3 下午4:31
-# @Author  : Luo Yao
-# @Site    : http://icode.baidu.com/repos/baidu/personal-code/Luoyao
+# @Author  : MaybeShewill-CV
+# @Site    : https://github.com/MaybeShewill-CV/attentive-gan-derainnet
 # @File    : train_model.py.py
 # @IDE: PyCharm
 """

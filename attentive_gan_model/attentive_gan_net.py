@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # @Time    : 18-6-26 上午11:45
-# @Author  : Luo Yao
-# @Site    : http://icode.baidu.com/repos/baidu/personal-code/Luoyao
+# @Author  : MaybeShewill-CV
+# @Site    : https://github.com/MaybeShewill-CV/attentive-gan-derainnet
 # @File    : attentive_gan_net.py
 # @IDE: PyCharm
 """

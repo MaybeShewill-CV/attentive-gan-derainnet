@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # @Time    : 19-3-1 上午10:41
-# @Author  : Luo Yao
-# @Site    : http://icode.baidu.com/repos/baidu/personal-code/Luoyao
+# @Author  : MaybeShewill-CV
+# @Site    : https://github.com/MaybeShewill-CV/attentive-gan-derainnet
 # @File    : data_feed_pipline.py
 # @IDE: PyCharm
 """
