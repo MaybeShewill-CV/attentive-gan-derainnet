@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # @Time    : 18-1-31 上午11:21
-# @Author  : Luo Yao
-# @Site    : http://icode.baidu.com/repos/baidu/personal-code/Luoyao
+# @Author  : MaybeShewill-CV
+# @Site    : https://github.com/MaybeShewill-CV/attentive-gan-derainnet
 # @File    : global_config.py
 # @IDE: PyCharm Community Edition
 """
@@ -29,13 +29,13 @@ __C.TRAIN.TF_ALLOW_GROWTH = True
 # Set the shadownet training batch size
 __C.TRAIN.BATCH_SIZE = 1
 # Set train image height
-__C.TRAIN.IMG_HEIGHT = 256
+__C.TRAIN.IMG_HEIGHT = 352
 # Set train image width
-__C.TRAIN.IMG_WIDTH = 376
+__C.TRAIN.IMG_WIDTH = 512
 # Set train image height
-__C.TRAIN.CROP_IMG_HEIGHT = 240
+__C.TRAIN.CROP_IMG_HEIGHT = 320
 # Set train image width
-__C.TRAIN.CROP_IMG_WIDTH = 360
+__C.TRAIN.CROP_IMG_WIDTH = 480
 # Set cpu multi process thread nums
 __C.TRAIN.CPU_MULTI_PROCESS_NUMS = 6
 # Set the GPU nums
@@ -51,6 +51,6 @@ __C.TEST.TF_ALLOW_GROWTH = False
 # Set the test batch size
 __C.TEST.BATCH_SIZE = 1
 # Set test image height
-__C.TEST.IMG_HEIGHT = 240
+__C.TEST.IMG_HEIGHT = 360
 # Set test image width
-__C.TEST.IMG_WIDTH = 360
+__C.TEST.IMG_WIDTH = 480
