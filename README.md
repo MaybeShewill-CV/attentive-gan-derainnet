@@ -1,6 +1,6 @@
 # attentive-gan-derainnet
 Use tensorflow to implement a Deep Convolution Generative Adversarial Network for image derain 
-task mainly based on the CVPR2018 paper "ttentive Generative Adversarial Network for Raindrop 
+task mainly based on the CVPR2018 paper "Attentive Generative Adversarial Network for Raindrop 
 Removal from A Single Image".You can refer to their paper for details https://arxiv.org/abs/1711.10098. 
 This model consists of a attentive attentive-recurrent network, a contextual autoencoder 
 network and a discriminative network. Using convolution lstm unit to generate attention map 
