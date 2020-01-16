@@ -244,7 +244,7 @@ def random_horizon_flip_batch_images(rain_image, clean_image, mask_image):
 
     concat_flipped_images = tf.image.random_flip_left_right(
         image=concat_images,
-        seed=tf.random.set_random_seed(1)
+        seed=tf.random.set_random_seed(4321)
     )
 
     flipped_rain_image = tf.slice(

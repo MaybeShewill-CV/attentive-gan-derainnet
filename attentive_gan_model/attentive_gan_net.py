@@ -61,14 +61,14 @@ class GenerativeNet(cnn_basenet.CNNBaseModel):
             inputs = input_tensor
             shortcut = input_tensor
 
-            for i in range(5):
+            for i in range(6):
                 if i == 0:
                     inputs = self.conv2d(inputdata=inputs,
                                          out_channel=32,
                                          kernel_size=3,
                                          padding='SAME',
                                          stride=1,
-                                         use_bias=False,
+                                         use_bias=True,
                                          name='block_{:d}_conv_1'.format(i))
                     # TODO reimplement residual block
                     inputs = self.lrelu(inputdata=inputs, name='block_{:d}_relu_1'.format(i + 1))
@@ -77,18 +77,18 @@ class GenerativeNet(cnn_basenet.CNNBaseModel):
                 else:
                     inputs = self.conv2d(inputdata=inputs,
                                          out_channel=32,
-                                         kernel_size=1,
+                                         kernel_size=3,
                                          padding='SAME',
                                          stride=1,
-                                         use_bias=False,
+                                         use_bias=True,
                                          name='block_{:d}_conv_1'.format(i))
                     inputs = self.lrelu(inputdata=inputs, name='block_{:d}_conv_1'.format(i + 1))
                     inputs = self.conv2d(inputdata=inputs,
                                          out_channel=32,
-                                         kernel_size=1,
+                                         kernel_size=3,
                                          padding='SAME',
                                          stride=1,
-                                         use_bias=False,
+                                         use_bias=True,
                                          name='block_{:d}_conv_2'.format(i))
                     inputs = self.lrelu(inputdata=inputs, name='block_{:d}_conv_2'.format(i + 1))
 

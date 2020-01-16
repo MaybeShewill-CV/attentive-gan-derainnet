@@ -51,6 +51,29 @@ def minmax_scale(input_arr):
     return output_arr
 
 
+def visualize_attention_map(attention_map):
+    """
+    The attention map is a matrix ranging from 0 to 1, where the greater the value,
+    the greater attention it suggests
+    :param attention_map:
+    :return:
+    """
+    attention_map_color = np.zeros(
+        shape=[attention_map.shape[0], attention_map.shape[1], 3],
+        dtype=np.uint8
+    )
+
+    red_color_map = np.zeros(
+        shape=[attention_map.shape[0], attention_map.shape[1]],
+        dtype=np.uint8) + 255
+    red_color_map = red_color_map * attention_map
+    red_color_map = np.array(red_color_map, dtype=np.uint8)
+
+    attention_map_color[:, :, 2] = red_color_map
+
+    return attention_map_color
+
+
 def test_model(image_path, weights_path, label_path=None):
     """
 
@@ -84,7 +107,7 @@ def test_model(image_path, weights_path, label_path=None):
     output, attention_maps = net.inference(input_tensor=input_tensor, name='derain_net')
 
     # Set sess configuration
-    sess_config = tf.ConfigProto(allow_soft_placement=False)
+    sess_config = tf.ConfigProto(allow_soft_placement=True)
     sess_config.gpu_options.per_process_gpu_memory_fraction = CFG.TEST.GPU_MEMORY_FRACTION
     sess_config.gpu_options.allow_growth = CFG.TEST.TF_ALLOW_GROWTH
     sess_config.gpu_options.allocator_type = 'BFC'
