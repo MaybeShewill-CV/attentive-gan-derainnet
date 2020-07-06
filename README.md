@@ -16,11 +16,12 @@ The main network architecture is as follows:
 You can support the project by checking out our sponsor page. 
 It takes only one click:
 
-<!--
 <a href=“https://tracking.gitads.io/?repo=attentive-gan-derainnet”>
  <img src="https://images.gitads.io/attentive-gan-derainnet" alt=“GitAds”/> </a>
--->
+
 <br><i>This advert was placed by <a href="https://tracking.gitads.io/?campaign=gitads&repo=mongodb-university-classes&redirect=gitads.io">GitAds</a> </i>
+
+[attentive-gan-derainnet](https://github.com/MaybeShewill-CV/attentive-gan-derainnet) is being sponsored by the following tool; please help to support us by taking a look and signing up to a free trial.
 
 ## Online demo
 
