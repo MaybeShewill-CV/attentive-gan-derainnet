@@ -16,8 +16,9 @@ The main network architecture is as follows:
 You can support the project by checking out our sponsor page. 
 It takes only one click:
 
-<a href=“https://tracking.gitads.io/?repo=attentive-gan-derainnet”>
- <img src="https://images.gitads.io/attentive-gan-derainnet" alt=“GitAds”/> </a>
+<a href="https://tracking.gitads.io/?repo=attentive-gan-derainnet">
+ <img src="https://images.gitads.io/attentive-gan-derainnet" alt="GitAds"/> 
+</a>
 
 <br><i>This advert was placed by <a href="https://tracking.gitads.io/?campaign=gitads&repo=mongodb-university-classes&redirect=gitads.io">GitAds</a> </i>
 
