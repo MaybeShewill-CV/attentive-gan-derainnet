@@ -12,13 +12,6 @@ The main network architecture is as follows:
 `Network Architecture`
 ![NetWork_Architecture](./data/images/net_architecture.png)
 
-## Supporting the project
-[attentive-gan-derainnet](https://github.com/MaybeShewill-CV/attentive-gan-derainnet) is 
-being sponsored by the following tool; please help to support us by taking a 
-look and signing up to a free trial.
-
- <a href="https://tracking.gitads.io/?repo=attentive-gan-derainnet"><img src="https://images.gitads.io/attentive-gan-derainnet" alt="GitAds"/></a>
-
 ## Online demo
 
 #### URL: https://maybeshewill-cv.github.io/attentive_derain_net
