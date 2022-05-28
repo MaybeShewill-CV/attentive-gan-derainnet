@@ -18,7 +18,7 @@ The main network architecture is as follows:
 
 ## Installation
 This software has only been tested on ubuntu 16.04(x64), python3.5, cuda-9.0, cudnn-7.0 with 
-a GTX-1070 GPU. To install this software you need tensorflow 1.12.0 and other version of 
+a GTX-1070 GPU. To install this software you need tensorflow 1.15.0 and other version of 
 tensorflow has not been tested but I think it will be able to work properly in 
 tensorflow above version 1.10. Other required package you may install them by
 
@@ -30,14 +30,14 @@ pip3 install -r requirements.txt
 In this repo I uploaded a model trained on dataset provided by the origin author 
 [origin_dataset](https://drive.google.com/open?id=1e7R76s6vwUJxILOcAsthgDLPSnOrQ49K).
 
-The trained derain net model weights files are stored in folder model/
+The trained derain net model weights files are stored in folder weights/
 
 You can test a single image on the trained model as follows
 
 ```
 cd REPO_ROOT_DIR
-python tools/test_model.py --weights_path model/derain_gan/derain_gan.ckpt-100000
---image_path data/test_data/test_1.png
+python tools/test_model.py --weights_path ./weights/derain_gan/derain_gan.ckpt-100000
+--image_path ./data/test_data/test_1.png
 ```
 
 The results are as follows:
@@ -127,8 +127,8 @@ saved model you may run following script
 
 ```
 cd PROJECT_ROOT_DIR
-python tools/export_tf_saved_model.py --export_dir model/derain_gan_saved_model 
---ckpt_path model/derain_gan/derain_gan.ckpt-100000
+python tools/export_tf_saved_model.py --export_dir ./weights/derain_gan_saved_model 
+--ckpt_path ./weights/derain_gan/derain_gan.ckpt-100000
 ```
 
 If you want to convert into tensorflow js model you can modified the bash 
@@ -160,7 +160,7 @@ traditional image augmentation function including random crop and
 random flip to augment the training dataset which protomed the new
 model performance. I have uploaded a new tensorboard record file and
 you can check the image ssim to compare the two models. New
-model weights can be found under model/new_model folder.
+model weights can be found under weights/new_model folder.
 
 `Model result comparison`
 ![Comparison_result](./data/images/model_comparison.png)
@@ -176,9 +176,9 @@ promotion.
 Since the batch size is 1 during the training process so the batch
 normalization layer seems to be useless. All the bn layers were removed
 after the new updates. I have trained a new model based on the newest 
-code and the new model will be placed in folder root_dir/model/new_model
+code and the new model will be placed in folder root_dir/weights/new_model
 and the model updated on 2018.10.12 will be placed in folder 
-root_dir/model/old_model. The new model can present more vivid details
+root_dir/weights/old_model. The new model can present more vivid details
 compared with the old model. The model's comparison result can be seen
 as follows.
 
